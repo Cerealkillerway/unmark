@@ -1,0 +1,56 @@
+/*
+ * @md/core theming contract (§4.7).
+ *
+ * Every value the editor paints with is a CSS custom property declared here.
+ * A consuming app restyles the editor by redefining these on any ancestor —
+ * it never needs to write a `.cm-*` selector. Light/dark is the same file
+ * with a different block of variables.
+ */
+
+.cm-md-editor {
+  /* Typography */
+  --md-font-body: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --md-font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --md-font-size: 19px;
+  --md-line-height: 1.72;
+  --md-mono-size: 0.82em;
+
+  /* Surfaces and ink */
+  --md-color-bg: #ffffff;
+  --md-color-text: #191d23;
+  --md-color-strong: #14171b;
+  --md-color-muted: #6b7280;
+  --md-color-border: #e1e5ea;
+  --md-color-accent: oklch(0.52 0.13 255);
+  --md-color-accent-soft: oklch(0.68 0.1 255);
+  --md-color-selection: oklch(0.92 0.04 255);
+  --md-color-cursor: var(--md-color-accent);
+
+  /* Syntax markers — the characters that fold away */
+  --md-color-marker: #c4cad2;
+
+  /* Blocks */
+  --md-color-heading: var(--md-color-strong);
+  --md-color-code: #1f2933;
+  --md-color-code-bg: #f2f4f6;
+  --md-color-code-border: #e7eaee;
+  --md-color-quote: var(--md-color-muted);
+  --md-color-quote-border: var(--md-color-border);
+  --md-color-link: var(--md-color-accent);
+  --md-color-link-underline: oklch(0.86 0.04 255);
+  --md-color-rule: var(--md-color-border);
+
+  /* Heading scale */
+  --md-h1-size: 1.75em;
+  --md-h2-size: 1.35em;
+  --md-h3-size: 1.15em;
+  --md-h4-size: 1em;
+  --md-h5-size: 0.92em;
+  --md-h6-size: 0.86em;
+  --md-heading-weight: 600;
+
+  /* Measure */
+  --md-content-width: 660px;
+  --md-content-padding: 46px 32px 40vh;
+  --md-gutter-width: 44px;
+}

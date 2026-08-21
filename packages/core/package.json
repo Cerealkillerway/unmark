@@ -4,8 +4,12 @@
   "description": "Inline-WYSIWYG markdown editing for CodeMirror 6. The document is the markdown string.",
   "license": "MIT",
   "type": "module",
-  "sideEffects": ["*.css"],
-  "files": ["dist"],
+  "sideEffects": [
+    "*.css"
+  ],
+  "files": [
+    "dist"
+  ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -48,11 +52,20 @@
     "@lezer/common": "^1.5.2",
     "@lezer/highlight": "^1.2.3",
     "@lezer/markdown": "^1.7.2",
+    "jsdom": "^30.0.1",
     "typescript": "^5.9.3",
     "vite": "^7.3.6",
     "vite-plugin-dts": "^5.0.3",
     "vitest": "^3.2.7"
   },
-  "keywords": ["codemirror", "markdown", "wysiwyg", "editor", "inline"],
-  "publishConfig": { "access": "public" }
+  "keywords": [
+    "codemirror",
+    "markdown",
+    "wysiwyg",
+    "editor",
+    "inline"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }
