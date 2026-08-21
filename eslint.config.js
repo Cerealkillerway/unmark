@@ -54,7 +54,14 @@ export default tseslint.config(
     rules: {
       '@typescript-eslint/no-unused-vars': [
         'error',
-        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+          // Destructuring a prop out so the rest object no longer carries it
+          // is the idiom, not a mistake.
+          ignoreRestSiblings: true
+        }
       ],
       '@typescript-eslint/consistent-type-imports': [
         'error',

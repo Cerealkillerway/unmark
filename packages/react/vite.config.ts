@@ -1,5 +1,5 @@
 import { resolve } from 'node:path'
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vitest/config'
 import dts from 'vite-plugin-dts'
 
 export default defineConfig({
@@ -20,5 +20,10 @@ export default defineConfig({
         id === 'react/jsx-runtime' ||
         id === '@md/core'
     }
+  },
+  test: {
+    environment: 'jsdom',
+    include: ['test/**/*.test.tsx'],
+    setupFiles: ['./test/setup.ts']
   }
 })
