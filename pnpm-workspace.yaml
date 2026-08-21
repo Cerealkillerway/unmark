@@ -1,0 +1,9 @@
+packages:
+  - 'packages/*'
+  - 'apps/*'
+
+allowBuilds:
+  esbuild: true
+  electron: true
+  electron-winstaller: true
+  app-builder-bin: true

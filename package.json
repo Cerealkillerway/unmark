@@ -1,0 +1,37 @@
+{
+  "name": "unmark-workspace",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "packageManager": "pnpm@11.22.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "pnpm -r --filter \"./packages/**\" build",
+    "build:all": "pnpm build && pnpm --filter unmark-desktop build",
+    "dev": "pnpm build && pnpm --filter unmark-desktop dev",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -b --pretty",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "pnpm build && changeset publish",
+    "clean": "rimraf packages/*/dist apps/*/out apps/*/dist packages/*/*.tsbuildinfo *.tsbuildinfo"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^3.0.1",
+    "@eslint/js": "^9.39.5",
+    "@types/node": "^24.10.1",
+    "eslint": "^9.39.5",
+    "globals": "^17.11.0",
+    "prettier": "^3.6.2",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.67.0",
+    "vitest": "^3.2.7"
+  }
+}

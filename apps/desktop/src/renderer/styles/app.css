@@ -1,0 +1,15 @@
+:root { color-scheme: dark; }
+html, body, #root { height: 100%; margin: 0; }
+body {
+  background: #14171b;
+  color: #dde2e8;
+  font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.boot { height: 100%; display: grid; place-content: center; justify-items: center; gap: 14px; }
+.boot__mark { display: grid; grid-template-columns: repeat(2, 14px); grid-template-rows: repeat(2, 14px); gap: 6px; }
+.boot__mark span, .boot__mark i { border-radius: 4px; }
+.boot__mark span:first-child { background: oklch(0.74 0.12 255); }
+.boot__mark span { background: #3a424c; }
+.boot__word { font-size: 22px; color: #838c97; letter-spacing: 0.01em; }
+.boot__word strong { color: #f2f4f7; font-weight: 600; }
+.boot__note { margin: 0; font-size: 12px; color: #6e7783; }
