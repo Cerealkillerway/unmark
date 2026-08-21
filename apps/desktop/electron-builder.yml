@@ -1,0 +1,70 @@
+appId: dev.unmark.app
+productName: unmark
+copyright: unmark contributors
+
+directories:
+  output: release
+  buildResources: build
+
+# electron-vite has already bundled main, preload and renderer into out/.
+files:
+  - out/**/*
+  - package.json
+
+# `.md` and friends open in unmark once it is installed.
+fileAssociations:
+  - ext: md
+    name: Markdown
+    role: Editor
+    mimeType: text/markdown
+  - ext: markdown
+    name: Markdown
+    role: Editor
+    mimeType: text/markdown
+
+mac:
+  category: public.app-category.productivity
+  icon: build/icon.png
+  target:
+    - target: dmg
+      arch: [arm64, x64]
+    - target: zip
+      arch: [arm64, x64]
+  # The sandboxed preload and the asset protocol need no extra entitlements,
+  # but hardened runtime is required for notarisation.
+  hardenedRuntime: true
+  gatekeeperAssess: false
+
+win:
+  icon: build/icon.ico
+  target:
+    - target: nsis
+      arch: [x64, arm64]
+    - target: portable
+      arch: [x64]
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  shortcutName: unmark
+
+linux:
+  icon: build/icon.png
+  # A .deb will not build without a maintainer. Replace this with a real
+  # contact before distributing packages; GitHub's noreply domain is used here
+  # rather than inventing an address that bounces.
+  maintainer: unmark contributors <noreply@users.noreply.github.com>
+  syncDesktopName: true
+  category: Office
+  synopsis: A markdown editor with no modes.
+  target:
+    - target: AppImage
+      arch: [x64, arm64]
+    - target: deb
+      arch: [x64]
+    - target: tar.gz
+      arch: [x64]
+
+# No auto-update server: §1's non-goals rule out anything that phones home.
+publish: null

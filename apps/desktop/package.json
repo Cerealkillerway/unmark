@@ -14,7 +14,10 @@
     "typecheck": "tsc -b --pretty",
     "pack:dir": "electron-vite build && electron-builder --dir",
     "dist": "electron-vite build && electron-builder",
-    "test": "vitest run"
+    "test": "vitest run",
+    "dist:linux": "electron-vite build && electron-builder --linux",
+    "dist:mac": "electron-vite build && electron-builder --mac",
+    "dist:win": "electron-vite build && electron-builder --win"
   },
   "dependencies": {
     "chokidar": "^4.0.3"
@@ -46,5 +49,8 @@
     "turndown": "^7.2.4",
     "typescript": "^5.9.3",
     "vite": "^7.3.6"
-  }
+  },
+  "author": "unmark contributors",
+  "homepage": "https://github.com/unmark/unmark",
+  "desktopName": "unmark.desktop"
 }

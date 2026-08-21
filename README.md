@@ -10,6 +10,8 @@ Typing the final `*` of `**test**` makes the word bold and the asterisks
 disappear. Move the caret back in and they come home. There is no source view,
 no preview pane, and no button that switches between them.
 
+<img src="docs/demo.gif" alt="Typing in unmark: the markdown syntax renders and folds away as it is written, and comes back when the caret moves into it." width="880">
+
 </div>
 
 ---
@@ -186,6 +188,28 @@ apps/desktop      the Electron app: main, preload bridge, renderer.
 
 ---
 
+## Releasing
+
+`@md/core` and `@md/react` ship through changesets; the desktop app through
+electron-builder.
+
+```bash
+pnpm changeset          # describe the change, pick the bump
+pnpm version-packages
+pnpm release            # build and publish the packages
+
+pnpm --filter unmark-desktop dist          # installers for this platform
+pnpm --filter unmark-desktop dist:linux    # or :mac / :win
+```
+
+macOS gets a dmg and a zip (arm64 + x64), Windows an NSIS installer and a
+portable exe, Linux an AppImage, a deb and a tarball. `.md` files associate
+with unmark on install. There is no auto-update server — §1's non-goals rule
+out anything that phones home.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the six architectural invariants and
+the nine failure modes worth checking before debugging anything.
+
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE).
