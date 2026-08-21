@@ -18,6 +18,10 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./accelerator": {
+      "types": "./dist/accelerator.d.ts",
+      "import": "./dist/accelerator.js"
+    },
     "./style.css": "./dist/style.css",
     "./package.json": "./package.json"
   },

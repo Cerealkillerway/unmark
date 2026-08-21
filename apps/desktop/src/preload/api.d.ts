@@ -1,6 +1,9 @@
-export {}
+import type { DesktopApi } from './index.js'
+
 declare global {
   interface Window {
-    api: { platform: NodeJS.Platform }
+    readonly api: DesktopApi
   }
 }
+
+export {}

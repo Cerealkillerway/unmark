@@ -18,9 +18,14 @@ export default defineConfig({
     target: 'es2022',
     sourcemap: true,
     lib: {
-      entry: resolve(import.meta.dirname, 'src/index.ts'),
+      entry: {
+        index: resolve(import.meta.dirname, 'src/index.ts'),
+        // A zero-dependency entry point: the Electron main process needs the
+        // accelerator mapping and must not pull CodeMirror in to get it.
+        accelerator: resolve(import.meta.dirname, 'src/commands/accelerator.ts')
+      },
       formats: ['es'],
-      fileName: () => 'index.js'
+      fileName: (_format, name) => `${name}.js`
     },
     rollupOptions: {
       external: (id) => /^@codemirror\//.test(id) || /^@lezer\//.test(id),
