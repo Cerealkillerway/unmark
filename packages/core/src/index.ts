@@ -26,11 +26,16 @@ export {
 } from './clipboard/index.js'
 export type { ClipboardOptions, MarkdownHtmlResult } from './clipboard/index.js'
 
+export { markdownLinks, urlAt, MOD_HELD_CLASS } from './links.js'
+export type { LinkOptions } from './links.js'
+
 export { markdownLanguage } from './markdown.js'
 export type { MarkdownLanguageOptions } from './markdown.js'
 
 export { buildDecorationRanges, sortDecoRanges, SYNTAX_CLASS } from './decorations/builder.js'
 export { markdownDecorations, toDecorationSet } from './decorations/plugin.js'
+export { imagePreviews } from './decorations/images.js'
+export type { ImageOptions } from './decorations/images.js'
 export { isRevealed } from './decorations/reveal.js'
 export { inlineRules } from './decorations/inline.js'
 export { blockRules, linkRules } from './decorations/block.js'

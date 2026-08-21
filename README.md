@@ -29,6 +29,23 @@ decorations layered over it. Open a file, save it untouched, and the bytes are
 identical: no line-ending normalisation, no BOM stripping, no trailing-newline
 fixups. There is a test for exactly that, and it runs on every commit.
 
+### Links and images
+
+A link renders as its label; `](https://…)` folds away with everything else.
+**Mod-click** opens it, and holding Mod underlines links so you can see what is
+clickable before you commit to it. Move the caret in and the URL comes back for
+editing, like any other syntax.
+
+Images render in place when the app gives `@md/core` a way to resolve their
+`src` — the library cannot know where your document lives. The desktop app
+serves local files through a read-only `unmark-asset:` scheme, and **does not
+fetch remote images**: a tracking pixel in a document you merely opened would
+report your IP to whoever wrote it, and this app has no telemetry of its own to
+make that a fair trade. Remote images stay as their alt text.
+
+Editable inline tables are not implemented. They are their own project, not a
+corner of this one.
+
 ### Not on the list
 
 No vault, graph view, backlinks or wiki-links. No plugin ecosystem. No cloud

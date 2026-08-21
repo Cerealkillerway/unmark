@@ -20,6 +20,8 @@ import { formatCommands } from './commands/format.js'
 import { CommandRegistry } from './commands/registry.js'
 import type { AppBridge } from './commands/types.js'
 import { lineSeparatorFor, serializeDocument } from './document.js'
+import { markdownLinks, type LinkOptions } from './links.js'
+import { imagePreviews, type ImageOptions } from './decorations/images.js'
 import { markdownDecorations } from './decorations/plugin.js'
 import { blockRules, linkRules } from './decorations/block.js'
 import { inlineRules } from './decorations/inline.js'
@@ -46,6 +48,13 @@ export interface MarkdownSetupOptions extends MarkdownLanguageOptions {
    * plain-text clipboard in place.
    */
   clipboard?: ClipboardOptions | false
+  /** Mod-click to follow a link. `false` leaves links inert. */
+  links?: LinkOptions | false
+  /**
+   * Render images in place. Off unless configured: `src` resolution needs to
+   * know where the document lives, which only the shell can say.
+   */
+  images?: ImageOptions | false
 }
 
 /** Every rule the decoration plugin knows about. */
@@ -76,6 +85,8 @@ export function markdownSetup(options: MarkdownSetupOptions = {}): Extension[] {
     commands = defaultCommands(),
     app = {},
     clipboard = {},
+    links = {},
+    images = false,
     ...language
   } = options
 
@@ -83,6 +94,8 @@ export function markdownSetup(options: MarkdownSetupOptions = {}): Extension[] {
     markdownLanguage(language),
     markdownDecorations(rules),
     ...(clipboard === false ? [] : [markdownClipboard(clipboard)]),
+    ...(links === false ? [] : [markdownLinks(links)]),
+    ...(images === false ? [] : [imagePreviews(images)]),
 
     history(),
     drawSelection(),

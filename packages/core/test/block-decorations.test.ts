@@ -146,10 +146,19 @@ describe('tables — out of scope for v1 (§4.2)', () => {
 })
 
 describe('links', () => {
-  it('keeps the URL visible in v1 but styles it', () => {
+  it('collapses to the label and comes back when the caret moves in', () => {
     const doc = '[label](https://example.com)'
-    expect(rendered(doc + '‸')).toBe(doc)
-    expect(classesAt(doc + '‸', doc.indexOf('https'))).toContain('cm-md-url')
+    expect(rendered(doc + '‸')).toBe('label')
+    expect(rendered('[lab‸el](https://example.com)')).toBe(doc)
+  })
+
+  it('styles the URL when it is revealed', () => {
+    const doc = '[lab‸el](https://example.com)'
+    expect(classesAt(doc, '[label](h'.length)).toContain('cm-md-url')
+  })
+
+  it('shows an autolink as its URL, without the angle brackets', () => {
+    expect(rendered('<https://example.com>‸')).toBe('https://example.com')
   })
 })
 

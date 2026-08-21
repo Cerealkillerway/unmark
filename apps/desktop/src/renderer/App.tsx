@@ -16,6 +16,7 @@ import { Sidebar } from './components/Sidebar.js'
 import { StatusBar } from './components/StatusBar.js'
 import { TabBar } from './components/TabBar.js'
 import { TitleBar } from './components/TitleBar.js'
+import { resolveImageSrc } from './state/assets.js'
 import { appCommands, type Shell } from './state/app-commands.js'
 import { htmlToMarkdown } from './state/html-to-markdown.js'
 import { editorSignal } from './state/signals.js'
@@ -305,6 +306,7 @@ export function App(): React.ReactElement {
                 app={{ shell: shellRef.current }}
                 codeLanguages={languages}
                 clipboard={{ htmlToMarkdown }}
+                images={{ resolveSrc: (src) => resolveImageSrc(doc.path, src) }}
                 onChange={(text) => store.setContent(doc.id, text)}
                 extensions={[registrar(doc.id)]}
               />

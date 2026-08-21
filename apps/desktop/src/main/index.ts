@@ -9,6 +9,7 @@ import {
   saveAsDialog,
   writeDocument
 } from './files.js'
+import { handleAssetRequests, registerAssetScheme } from './assets.js'
 import { buildMenu } from './menu.js'
 import { DocumentWatcher } from './watcher.js'
 
@@ -89,7 +90,11 @@ function registerIpc(): void {
   })
 }
 
+// Privileged schemes must be declared before the app is ready.
+registerAssetScheme()
+
 void app.whenReady().then(() => {
+  handleAssetRequests()
   registerIpc()
   createWindow()
   app.on('activate', () => {

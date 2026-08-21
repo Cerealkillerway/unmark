@@ -80,10 +80,26 @@ export const blockRules: RuleTable = {
  * Links and images. The URL is styled but never hidden in v1 — collapsing a
  * link to its label needs a widget and Mod-click handling, which is Phase 8.
  */
+/**
+ * Links collapse to their label; the URL comes back when the caret moves in.
+ *
+ * `URL` and `LinkTitle` are listed as markers so they fold away with the
+ * brackets — they are syntax from the reader's point of view, even though the
+ * parser does not name them `*Mark`. Mod-click (see `links.ts`) is what
+ * replaces the lost ability to click through.
+ */
 export const linkRules: RuleTable = {
-  Link: { keepMarkers: true, marker: 'cm-md-link-mark', content: 'cm-md-link' },
-  Image: { keepMarkers: true, marker: 'cm-md-link-mark', content: 'cm-md-link' },
-  Autolink: { keepMarkers: true, marker: 'cm-md-link-mark' },
+  Link: {
+    marker: 'cm-md-link-mark',
+    content: 'cm-md-link',
+    markerNames: ['LinkMark', 'URL', 'LinkTitle']
+  },
+  Image: {
+    marker: 'cm-md-link-mark',
+    content: 'cm-md-link',
+    markerNames: ['LinkMark', 'URL', 'LinkTitle']
+  },
+  Autolink: { marker: 'cm-md-link-mark', markerNames: ['LinkMark'] },
   URL: { whole: 'cm-md-url' },
   LinkLabel: { whole: 'cm-md-link-label' },
   LinkReference: { line: 'cm-md-line-linkref' }

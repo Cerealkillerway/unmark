@@ -142,5 +142,27 @@ export const markdownTheme = EditorView.theme({
     fontSize: 'var(--md-mono-size)',
     color: 'var(--md-color-muted)'
   },
-  '.cm-md-line-linkref': { color: 'var(--md-color-muted)' }
+  '.cm-md-line-linkref': { color: 'var(--md-color-muted)' },
+
+  /* Image previews. */
+  '.cm-md-image': {
+    display: 'inline-block',
+    maxWidth: '100%',
+    borderRadius: '6px',
+    border: '1px solid var(--md-color-border)',
+    verticalAlign: 'top'
+  },
+  '.cm-md-image-missing': {
+    fontFamily: 'var(--md-font-mono)',
+    fontSize: 'var(--md-mono-size)',
+    color: 'var(--md-color-muted)',
+    borderBottom: '1px dashed var(--md-color-border)'
+  },
+
+  /* Holding Mod turns links into something you can click. */
+  '&.cm-md-mod .cm-md-link': {
+    cursor: 'pointer',
+    textDecoration: 'underline',
+    textDecorationColor: 'var(--md-color-link-underline)'
+  }
 })
