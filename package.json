@@ -12,6 +12,7 @@
     "build:all": "pnpm build && pnpm --filter unmark-desktop build",
     "dev": "pnpm build && pnpm --filter unmark-desktop dev",
     "dev:libs": "pnpm -r --parallel --filter \"./packages/**\" dev",
+    "sandbox:fix": "pnpm --filter unmark-desktop sandbox:fix",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc -b --pretty",

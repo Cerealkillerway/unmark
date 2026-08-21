@@ -7,7 +7,8 @@ version pinned in `packageManager`.
 
 ```bash
 pnpm install
-pnpm dev        # builds the packages, then runs the desktop app
+pnpm sandbox:fix   # Linux only, once — see below
+pnpm dev           # builds the packages, then runs the desktop app
 pnpm test
 ```
 
@@ -22,12 +23,17 @@ edits are invisible to a running dev server without it.
 `pnpm dev` goes through `apps/desktop/scripts/dev.mjs`, which handles two
 environment papercuts before handing off to electron-vite:
 
-* **The SUID sandbox.** npm and pnpm unpack `chrome-sandbox` without the
-  setuid bit, and Chromium aborts rather than run a renderer unsandboxed. Where
-  unprivileged user namespaces are available the script passes
-  `--disable-setuid-sandbox`, which keeps the renderer sandboxed via
-  namespaces; where they are not, it prints the one-time `chown`/`chmod`. It
-  never passes `--no-sandbox`, which would turn the sandbox off entirely.
+* **The sandbox.** npm and pnpm unpack `chrome-sandbox` without its setuid
+  bit, and Ubuntu 23.10+ blocks unprivileged user namespaces through AppArmor,
+  so on a stock Ubuntu Chromium has neither mechanism available and refuses to
+  start. The script tries the namespace route, and if Chromium reports "No
+  usable sandbox" it points at `pnpm sandbox:fix`, which sets root ownership
+  and mode 4755 on the helper. It never passes `--no-sandbox`, which would turn
+  the renderer sandbox off entirely.
+
+  Do not try to probe for namespace support: `unshare --user true` succeeds
+  even where userns is blocked, because `unshare` has an AppArmor profile that
+  permits it. The check reports "fine" on exactly the systems that are not.
 * **`ELECTRON_RUN_AS_NODE`.** A terminal inside another Electron process leaks
   it, and Electron then boots as plain Node with no `app` object. The script
   strips it from the child environment.

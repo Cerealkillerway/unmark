@@ -18,7 +18,8 @@
     "dist:linux": "electron-vite build && electron-builder --linux",
     "dist:mac": "electron-vite build && electron-builder --mac",
     "dist:win": "electron-vite build && electron-builder --win",
-    "dev:raw": "electron-vite dev"
+    "dev:raw": "electron-vite dev",
+    "sandbox:fix": "node scripts/fix-sandbox.mjs"
   },
   "dependencies": {
     "chokidar": "^4.0.3"

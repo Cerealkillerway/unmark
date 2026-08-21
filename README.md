@@ -254,6 +254,7 @@ up the right version from `packageManager` in `package.json`).
 
 ```bash
 pnpm install
+pnpm sandbox:fix   # Linux only, once — see "sandbox errors" below
 pnpm dev
 ```
 
@@ -274,23 +275,42 @@ most common way to lose ten minutes here: you edit a decoration rule, nothing
 happens in the window, and the code looks right — because the app is still
 running the last build.
 
-### If Electron aborts over the SUID sandbox
+### If Electron will not start: sandbox errors
+
+Two different messages, one underlying problem:
 
 ```
-FATAL: The SUID sandbox helper binary was found, but is not configured
-correctly. Rather than run without sandboxing I'm aborting now.
+FATAL: The SUID sandbox helper binary was found, but is not configured correctly.
+FATAL: No usable sandbox!
 ```
 
-Chromium sandboxes renderers on Linux one of two ways: a small setuid helper
-binary, or unprivileged user namespaces. It prefers the helper when one is
-present — and npm and pnpm unpack `chrome-sandbox` as an ordinary file owned by
-you, not root-owned with mode 4755. Rather than run a renderer with no sandbox,
-Chromium stops.
+Chromium sandboxes a renderer on Linux one of two ways: unprivileged user
+namespaces, or a small setuid helper binary. On a stock Ubuntu 23.10 or later,
+**neither is available out of the box** — AppArmor blocks unprivileged user
+namespaces, and npm and pnpm unpack `chrome-sandbox` as an ordinary file owned
+by you rather than root-owned with mode 4755. Rather than run a renderer with
+no sandbox at all, Chromium stops.
 
-`pnpm dev` handles this: if the helper is not setuid-root but this system
-allows user namespaces, it launches with `--disable-setuid-sandbox`, which uses
-namespaces instead. **The renderer stays sandboxed** — measured on the actual
-process tree:
+Fix it once:
+
+```bash
+pnpm sandbox:fix
+```
+
+That sets root ownership and mode 4755 on the helper — one sudo prompt, one
+file inside `node_modules`. It works whatever AppArmor thinks of namespaces,
+which is why it is the remedy here rather than a system-wide sysctl or a new
+AppArmor profile. **Re-run it after any `pnpm install` that re-extracts
+Electron**, since the file gets replaced.
+
+Where user namespaces *are* permitted, `pnpm dev` gets there on its own by
+passing `--disable-setuid-sandbox`, and you never see any of this.
+
+**Do not reach for `--no-sandbox`.** Chromium's own error message suggests it,
+and it is the top answer everywhere, and it disables the renderer sandbox
+outright — in an app that opens files other people wrote, whose renderer runs
+with `sandbox: true` for exactly that reason. The difference is real, measured
+on this app's process tree:
 
 | launch | `Seccomp` in `/proc/<pid>/status` | user namespace |
 |---|---|---|
@@ -298,24 +318,13 @@ process tree:
 | `--disable-setuid-sandbox` | `2` — identical | its own |
 | `--no-sandbox` | `0` on every process | the host's |
 
-If your system also blocks unprivileged user namespaces — Ubuntu 24.04 and
-later restrict them through AppArmor — there is no way around it from inside
-the project, and `pnpm dev` will tell you so. Fix the helper once instead:
+Packaged builds are unaffected: the `.deb`'s install script sets the same
+permissions, and the AppImage carries its own helper.
 
-```bash
-SANDBOX=$(node -p "require('path').join(require('path').dirname(require('electron')), 'chrome-sandbox')")
-sudo chown root:root "$SANDBOX"
-sudo chmod 4755 "$SANDBOX"
-```
-
-Redo that after any `pnpm install` that re-extracts Electron. Packaged builds
-are unaffected: the `.deb`'s install script sets the same permissions, and the
-AppImage carries its own.
-
-**Do not reach for `--no-sandbox`.** It is the first suggestion in every search
-result and it disables the renderer sandbox outright — for an app that opens
-files other people wrote, in a renderer that runs with `sandbox: true` for
-exactly that reason.
+> One trap if you go looking: `unshare --user true` succeeding proves nothing.
+> `unshare` ships with an AppArmor profile that permits it, so it reports
+> "namespaces work" on precisely the systems where they do not work for
+> ordinary binaries like Electron.
 
 ### If Electron starts as plain Node
 

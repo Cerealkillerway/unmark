@@ -1,8 +1,8 @@
 /**
- * `pnpm dev` — electron-vite, with two papercuts handled so the documented
- * happy path actually works on Linux and inside embedded terminals.
+ * `pnpm dev` — electron-vite, with two environment papercuts handled so the
+ * documented happy path actually works.
  */
-import { spawn, spawnSync } from 'node:child_process'
+import { spawn } from 'node:child_process'
 import { statSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { createRequire } from 'node:module'
@@ -20,9 +20,9 @@ while (forwarded[0] === '--') forwarded.shift()
 const dim = (text) => `\x1b[2m${text}\x1b[0m`
 const bold = (text) => `\x1b[1m${text}\x1b[0m`
 
-/** `require('electron')` resolves to the binary path, not the module. */
 function sandboxHelper() {
   try {
+    // `require('electron')` resolves to the binary path, not the module.
     return join(dirname(require('electron')), 'chrome-sandbox')
   } catch {
     return null
@@ -38,49 +38,29 @@ function isSetuidRoot(path) {
   }
 }
 
-/** Can this session create an unprivileged user namespace? */
-function userNamespacesWork() {
-  const probe = spawnSync('unshare', ['--user', 'true'], { stdio: 'ignore' })
-  return probe.status === 0
-}
-
 /**
- * Chromium sandboxes renderers on Linux one of two ways: the SUID helper
- * binary, or unprivileged user namespaces. It prefers the helper when one
- * exists — and aborts outright if that helper is not root-owned with mode
- * 4755, which is exactly how npm and pnpm unpack it:
+ * Chromium sandboxes a renderer on Linux one of two ways: unprivileged user
+ * namespaces, or a small setuid helper binary. It prefers the helper when one
+ * exists — and aborts if that helper is not root-owned with mode 4755, which is
+ * exactly how npm and pnpm unpack it.
  *
- *   FATAL: The SUID sandbox helper binary was found, but is not configured
- *   correctly. Rather than run without sandboxing I'm aborting now.
+ * `--disable-setuid-sandbox` makes it use namespaces instead. That is NOT
+ * `--no-sandbox`: the renderer keeps seccomp-bpf and its own user namespace.
  *
- * When namespaces are available, `--disable-setuid-sandbox` skips the helper
- * and uses them instead. That is NOT `--no-sandbox`: the renderer keeps
- * seccomp-bpf and its own user namespace. When they are not available there is
- * no way around it from here, so say what to run rather than pretend.
+ * Whether namespaces are actually available cannot be probed reliably from
+ * here. `unshare --user` succeeds even on Ubuntu 23.10+, where AppArmor blocks
+ * userns for ordinary binaries, because `unshare` itself ships with a profile
+ * that permits it — so the obvious check reports "fine" on precisely the
+ * systems where it is not. Rather than guess, try the namespace route and
+ * explain properly if Chromium says it has nothing usable.
  */
-if (process.platform === 'linux') {
-  const helper = sandboxHelper()
-  if (helper && !isSetuidRoot(helper)) {
-    if (userNamespacesWork()) {
-      forwarded.unshift('--disable-setuid-sandbox')
-      console.log(
-        dim('[dev] chrome-sandbox is not setuid-root; using the user-namespace sandbox.')
-      )
-      console.log(dim('      The renderer stays sandboxed (seccomp-bpf + its own userns).'))
-    } else {
-      console.log(
-        bold('[dev] Electron will abort: chrome-sandbox is not setuid-root and this') +
-          '\n' +
-          bold('      system does not allow unprivileged user namespaces.') +
-          '\n\n' +
-          '      Fix it once (redo after every Electron reinstall):\n\n' +
-          `        sudo chown root:root '${helper}'\n` +
-          `        sudo chmod 4755 '${helper}'\n\n` +
-          dim('      Do not reach for --no-sandbox: it turns the renderer sandbox off\n') +
-          dim('      entirely, which is the thing this app relies on.\n')
-      )
-    }
-  }
+const helper = process.platform === 'linux' ? sandboxHelper() : null
+const needsNamespaces = helper !== null && !isSetuidRoot(helper)
+
+if (needsNamespaces) {
+  forwarded.unshift('--disable-setuid-sandbox')
+  console.log(dim('[dev] chrome-sandbox is not setuid-root; trying the user-namespace sandbox.'))
+  console.log(dim('      If this system blocks user namespaces, run: pnpm sandbox:fix'))
 }
 
 const env = { ...process.env }
@@ -101,8 +81,38 @@ const args = ['dev']
 if (forwarded.length > 0) args.push('--', ...forwarded)
 
 const child = spawn('electron-vite', args, {
-  stdio: 'inherit',
+  stdio: ['inherit', 'inherit', 'pipe'],
   env,
   shell: process.platform === 'win32'
 })
-child.on('exit', (code, signal) => process.exit(signal ? 1 : (code ?? 0)))
+
+/**
+ * Chromium's own message tells you to "live dangerously" with --no-sandbox.
+ * Say what actually fixes it instead, while the error is still on screen.
+ */
+let sawUnusableSandbox = false
+child.stderr.on('data', (chunk) => {
+  process.stderr.write(chunk)
+  if (String(chunk).includes('No usable sandbox')) sawUnusableSandbox = true
+})
+
+child.on('exit', (code, signal) => {
+  if (sawUnusableSandbox && helper) {
+    console.error(
+      '\n' +
+        bold('This system blocks unprivileged user namespaces (Ubuntu 23.10+ does,') +
+        '\n' +
+        bold('through AppArmor), so Chromium has no sandbox available.') +
+        '\n\n' +
+        '  ' +
+        bold('pnpm sandbox:fix') +
+        '\n\n' +
+        '    Gives the SUID helper the permissions it needs. One sudo prompt,\n' +
+        '    one file, and it works whatever AppArmor thinks of namespaces.\n' +
+        '    Re-run it after any install that re-extracts Electron.\n\n' +
+        dim('  Not --no-sandbox. Chromium suggests it above; it turns the renderer\n') +
+        dim('  sandbox off entirely, in an app that opens files other people wrote.\n')
+    )
+  }
+  process.exit(signal ? 1 : (code ?? 0))
+})
