@@ -14,6 +14,7 @@ import {
   keymap,
   rectangularSelection
 } from '@codemirror/view'
+import { markdownClipboard, type ClipboardOptions } from './clipboard/index.js'
 import { commandKeymap } from './commands/keymap.js'
 import { formatCommands } from './commands/format.js'
 import { CommandRegistry } from './commands/registry.js'
@@ -40,6 +41,11 @@ export interface MarkdownSetupOptions extends MarkdownLanguageOptions {
   commands?: CommandRegistry | false
   /** Handed to every command as `ctx.app`. */
   app?: AppBridge
+  /**
+   * Dual-format copy and HTML paste (§4.6). `false` leaves CodeMirror's own
+   * plain-text clipboard in place.
+   */
+  clipboard?: ClipboardOptions | false
 }
 
 /** Every rule the decoration plugin knows about. */
@@ -69,12 +75,14 @@ export function markdownSetup(options: MarkdownSetupOptions = {}): Extension[] {
     theme = true,
     commands = defaultCommands(),
     app = {},
+    clipboard = {},
     ...language
   } = options
 
   return [
     markdownLanguage(language),
     markdownDecorations(rules),
+    ...(clipboard === false ? [] : [markdownClipboard(clipboard)]),
 
     history(),
     drawSelection(),

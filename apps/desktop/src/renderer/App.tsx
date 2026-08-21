@@ -17,6 +17,7 @@ import { StatusBar } from './components/StatusBar.js'
 import { TabBar } from './components/TabBar.js'
 import { TitleBar } from './components/TitleBar.js'
 import { appCommands, type Shell } from './state/app-commands.js'
+import { htmlToMarkdown } from './state/html-to-markdown.js'
 import { editorSignal } from './state/signals.js'
 import { DocumentStore } from './state/store.js'
 import { loadTheme, saveTheme, type ThemeName } from './state/theme.js'
@@ -303,6 +304,7 @@ export function App(): React.ReactElement {
                 commands={registry}
                 app={{ shell: shellRef.current }}
                 codeLanguages={languages}
+                clipboard={{ htmlToMarkdown }}
                 onChange={(text) => store.setContent(doc.id, text)}
                 extensions={[registrar(doc.id)]}
               />

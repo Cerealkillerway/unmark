@@ -17,6 +17,15 @@ export {
 } from './document.js'
 export type { LineSeparator } from './document.js'
 
+export {
+  CLIPBOARD_SENTINEL,
+  isOwnHtml,
+  markdownClipboard,
+  markdownToHtml,
+  wrapWithSentinel
+} from './clipboard/index.js'
+export type { ClipboardOptions, MarkdownHtmlResult } from './clipboard/index.js'
+
 export { markdownLanguage } from './markdown.js'
 export type { MarkdownLanguageOptions } from './markdown.js'
 
