@@ -87,7 +87,11 @@ export default tseslint.config(
       'apps/desktop/src/preload/**/*.ts',
       '**/*.config.ts',
       '**/*.config.js',
-      'eslint.config.js'
+      'eslint.config.js',
+      // Build and launch scripts. Talking to the developer on stdout is what
+      // they are for, so `no-console` is off here along with the rest.
+      '**/scripts/**/*.mjs',
+      '**/scripts/**/*.js'
     ],
     languageOptions: { globals: { ...globals.node } },
     rules: { 'no-console': 'off' }

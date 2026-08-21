@@ -19,12 +19,20 @@ Keep `pnpm dev:libs` running in a second terminal while you work under
 `packages/` — the app resolves `@md/core` to its **built** output, so library
 edits are invisible to a running dev server without it.
 
-If you are launching from a terminal that is itself inside an Electron app,
-`ELECTRON_RUN_AS_NODE=1` is inherited and Electron starts as plain Node:
+`pnpm dev` goes through `apps/desktop/scripts/dev.mjs`, which handles two
+environment papercuts before handing off to electron-vite:
 
-```bash
-env -u ELECTRON_RUN_AS_NODE -u ELECTRON_NO_ATTACH_CONSOLE pnpm dev
-```
+* **The SUID sandbox.** npm and pnpm unpack `chrome-sandbox` without the
+  setuid bit, and Chromium aborts rather than run a renderer unsandboxed. Where
+  unprivileged user namespaces are available the script passes
+  `--disable-setuid-sandbox`, which keeps the renderer sandboxed via
+  namespaces; where they are not, it prints the one-time `chown`/`chmod`. It
+  never passes `--no-sandbox`, which would turn the sandbox off entirely.
+* **`ELECTRON_RUN_AS_NODE`.** A terminal inside another Electron process leaks
+  it, and Electron then boots as plain Node with no `app` object. The script
+  strips it from the child environment.
+
+`pnpm dev:raw` skips all of that if you want electron-vite unmediated.
 
 ## The six rules
 

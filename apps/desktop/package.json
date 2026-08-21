@@ -8,7 +8,7 @@
   "type": "module",
   "main": "./out/main/index.cjs",
   "scripts": {
-    "dev": "electron-vite dev",
+    "dev": "node scripts/dev.mjs",
     "build": "electron-vite build",
     "preview": "electron-vite preview",
     "typecheck": "tsc -b --pretty",
@@ -17,7 +17,8 @@
     "test": "vitest run",
     "dist:linux": "electron-vite build && electron-builder --linux",
     "dist:mac": "electron-vite build && electron-builder --mac",
-    "dist:win": "electron-vite build && electron-builder --win"
+    "dist:win": "electron-vite build && electron-builder --win",
+    "dev:raw": "electron-vite dev"
   },
   "dependencies": {
     "chokidar": "^4.0.3"
