@@ -2,11 +2,18 @@
 
 ## Getting set up
 
+**Requirements:** Node 20 or newer and pnpm 11 — `corepack enable` picks up the
+version pinned in `packageManager`.
+
 ```bash
 pnpm install
 pnpm dev        # builds the packages, then runs the desktop app
 pnpm test
 ```
+
+`pnpm dev` starts electron-vite: the renderer gets a Vite dev server with hot
+reload, and the Electron window opens against it. Renderer edits appear
+immediately; `src/main` and `src/preload` edits restart Electron.
 
 Keep `pnpm dev:libs` running in a second terminal while you work under
 `packages/` — the app resolves `@md/core` to its **built** output, so library

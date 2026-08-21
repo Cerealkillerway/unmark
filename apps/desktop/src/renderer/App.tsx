@@ -196,6 +196,28 @@ export function App(): React.ReactElement {
     if (store.count === 0) store.create()
   }, [snapshot.docs.length, store])
 
+  // `unmark notes.md`, or a double-clicked `.md`. Main cannot hand these over
+  // any other way — by the time it has them there is no renderer yet — so it
+  // queues them and this drains the queue once, on mount.
+  const drained = useRef(false)
+  useEffect(() => {
+    if (drained.current) return
+    drained.current = true
+    void window.api.pendingOpens().then((paths) => {
+      for (const path of paths) void openPath(path)
+    })
+  }, [openPath])
+
+  // A second `unmark other.md` while this window is already up, or macOS
+  // handing over a double-clicked file.
+  useEffect(
+    () =>
+      window.api.onOpenRequested((paths) => {
+        for (const path of paths) void openPath(path)
+      }),
+    [openPath]
+  )
+
   useEffect(() => {
     const id = snapshot.activeId
     setActiveView(id ? (views.current.get(id) ?? null) : null)

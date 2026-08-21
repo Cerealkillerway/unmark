@@ -1,5 +1,6 @@
+import { statSync } from 'node:fs'
 import { readFile, readdir, writeFile } from 'node:fs/promises'
-import { basename, join } from 'node:path'
+import { basename, join, resolve } from 'node:path'
 import { type BrowserWindow, dialog } from 'electron'
 import type { FolderListing, OpenedFile, SaveAsRequest, WriteRequest } from '../shared/ipc.js'
 
@@ -81,3 +82,27 @@ export async function listFolder(path: string): Promise<FolderListing> {
 }
 
 export const displayName = (path: string): string => basename(path)
+
+/**
+ * The files named on a command line — `unmark notes.md`, or a double-clicked
+ * `.md` from the file manager.
+ *
+ * `skip` is how many leading entries are the runtime rather than arguments: a
+ * packaged app is invoked as `unmark <args>`, but in development Electron is
+ * invoked as `electron . <args>`, so the project path is an argument too.
+ * Switches are dropped, and so is anything that is not a readable file — a
+ * relaunch can carry flags we know nothing about.
+ */
+export function filesFromArgv(argv: readonly string[], skip: number): string[] {
+  const out: string[] = []
+  for (const arg of argv.slice(skip)) {
+    if (arg.startsWith('-')) continue
+    try {
+      if (!statSync(arg).isFile()) continue
+    } catch {
+      continue
+    }
+    out.push(resolve(arg))
+  }
+  return out
+}

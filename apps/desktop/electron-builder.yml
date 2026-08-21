@@ -51,6 +51,10 @@ nsis:
 
 linux:
   icon: build/icon.png
+  # Without this the binary keeps the package name and lands only in
+  # /opt/unmark, with nothing on PATH — `unmark notes.md` from a terminal
+  # would not work.
+  executableName: unmark
   # A .deb will not build without a maintainer. Replace this with a real
   # contact before distributing packages; GitHub's noreply domain is used here
   # rather than inventing an address that bounces.

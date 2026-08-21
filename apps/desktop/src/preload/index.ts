@@ -27,6 +27,9 @@ const api = {
   watch: (path: string): Promise<void> => ipcRenderer.invoke(IPC.fileWatch, path),
   unwatch: (path: string): Promise<void> => ipcRenderer.invoke(IPC.fileUnwatch, path),
 
+  /** Files named on the command line before this window existed. Drains the queue. */
+  pendingOpens: (): Promise<string[]> => ipcRenderer.invoke(IPC.filePendingOpens),
+
   openFolderDialog: (): Promise<string | null> => ipcRenderer.invoke(IPC.folderOpenDialog),
   listFolder: (path: string): Promise<FolderListing> => ipcRenderer.invoke(IPC.folderList, path),
 
@@ -38,6 +41,13 @@ const api = {
     const listener = (_event: unknown, path: string): void => handler(path)
     ipcRenderer.on(IPC.fileChangedOnDisk, listener)
     return () => ipcRenderer.off(IPC.fileChangedOnDisk, listener)
+  },
+
+  /** @returns an unsubscribe function. */
+  onOpenRequested: (handler: (paths: string[]) => void): (() => void) => {
+    const listener = (_event: unknown, paths: string[]): void => handler(paths)
+    ipcRenderer.on(IPC.fileOpenRequested, listener)
+    return () => ipcRenderer.off(IPC.fileOpenRequested, listener)
   },
 
   /** @returns an unsubscribe function. */

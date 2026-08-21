@@ -2,6 +2,7 @@ import { app, BrowserWindow, Menu, ipcMain, shell } from 'electron'
 import { join } from 'node:path'
 import { IPC, type MenuCommand, type SaveAsRequest, type WriteRequest } from '../shared/ipc.js'
 import {
+  filesFromArgv,
   folderDialog,
   listFolder,
   openDialog,
@@ -14,6 +15,26 @@ import { buildMenu } from './menu.js'
 import { DocumentWatcher } from './watcher.js'
 
 const watchers = new Map<number, DocumentWatcher>()
+
+/**
+ * Files named before the renderer existed. It drains this once it is mounted;
+ * anything arriving later is pushed straight through.
+ */
+const pendingOpens: string[] = []
+
+function queueOpen(paths: readonly string[]): void {
+  if (paths.length === 0) return
+  const [win] = BrowserWindow.getAllWindows()
+  if (win && !win.isDestroyed() && !win.webContents.isLoading()) {
+    win.webContents.send(IPC.fileOpenRequested, paths)
+    if (win.isMinimized()) win.restore()
+    win.focus()
+    return
+  }
+  pendingOpens.push(...paths)
+}
+
+const argvSkip = (): number => (app.isPackaged ? 1 : 2)
 
 function watcherFor(win: BrowserWindow): DocumentWatcher {
   const existing = watchers.get(win.id)
@@ -79,6 +100,8 @@ function registerIpc(): void {
     if (win) watcherFor(win).unwatch(path)
   })
 
+  ipcMain.handle(IPC.filePendingOpens, () => pendingOpens.splice(0))
+
   ipcMain.handle(IPC.folderOpenDialog, (event) => folderDialog(senderWindow(event)))
   ipcMain.handle(IPC.folderList, (_event, path: string) => listFolder(path))
 
@@ -93,9 +116,27 @@ function registerIpc(): void {
 // Privileged schemes must be declared before the app is ready.
 registerAssetScheme()
 
+// macOS delivers a double-clicked file this way, and it can fire before ready.
+app.on('open-file', (event, path) => {
+  event.preventDefault()
+  queueOpen([path])
+})
+
+/**
+ * One instance owns the window. A second `unmark notes.md` should open a tab
+ * in the window you already have, not a second copy of the editor with its own
+ * idea of which files are dirty.
+ */
+if (!app.requestSingleInstanceLock()) {
+  app.quit()
+} else {
+  app.on('second-instance', (_event, argv) => queueOpen(filesFromArgv(argv, argvSkip())))
+}
+
 void app.whenReady().then(() => {
   handleAssetRequests()
   registerIpc()
+  pendingOpens.push(...filesFromArgv(process.argv, argvSkip()))
   createWindow()
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()

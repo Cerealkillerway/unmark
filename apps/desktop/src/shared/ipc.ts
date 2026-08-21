@@ -59,8 +59,16 @@ export const IPC = {
    */
   folderOpenDialog: 'folder:openDialog',
   folderList: 'folder:list',
+  /**
+   * Also deliberate: `unmark notes.md` and double-clicking a `.md` file both
+   * arrive as argv in the main process, which has no way to hand them over
+   * otherwise. The renderer drains the queue once it is mounted.
+   */
+  filePendingOpens: 'file:pendingOpens',
 
   /** M→R */
   fileChangedOnDisk: 'file:changedOnDisk',
+  /** A path arriving after startup — a second launch, or macOS `open-file`. */
+  fileOpenRequested: 'file:openRequested',
   commandRun: 'command:run'
 } as const

@@ -154,29 +154,155 @@ which is the contract itself.
 
 ---
 
-## Development
+## Installing the app
+
+There are no published releases yet — build the installer for your platform,
+then install it the normal way. Building needs Node 20+ and pnpm 11.
+
+```bash
+git clone <this repo> && cd unmark
+pnpm install
+pnpm --filter unmark-desktop dist          # installers for the current platform
+```
+
+Everything lands in `apps/desktop/release/`.
+
+### Linux
+
+`dist` produces an AppImage, a `.deb` and a tarball.
+
+```bash
+# AppImage — no install, just run it
+chmod +x apps/desktop/release/unmark-0.1.0.AppImage
+./apps/desktop/release/unmark-0.1.0.AppImage
+
+# .deb — Debian, Ubuntu, Mint
+sudo apt install ./apps/desktop/release/unmark-desktop_0.1.0_amd64.deb
+unmark                                     # now on your PATH
+unmark notes.md                            # or open a file directly
+
+# tarball — unpack anywhere
+tar xzf apps/desktop/release/unmark-desktop-0.1.0.tar.gz
+./unmark-desktop-0.1.0/unmark
+```
+
+The `.deb` puts unmark in your application menu, registers it as a handler for
+`.md` files, and symlinks `/usr/bin/unmark`. Uninstall with
+`sudo apt remove unmark-desktop`.
+
+### macOS
+
+`dist` produces a `.dmg` and a `.zip` for both Apple Silicon and Intel. Open the
+dmg and drag unmark to Applications.
+
+The build is unsigned, so Gatekeeper will refuse the first launch. Right-click
+the app and choose **Open**, or clear the quarantine flag:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/unmark.app
+```
+
+Signing and notarising needs an Apple Developer certificate — set
+`CSC_LINK`/`CSC_KEY_PASSWORD` and electron-builder handles the rest.
+
+### Windows
+
+`dist` produces an NSIS installer and a portable `.exe`. The installer lets you
+pick the location and installs per-user, so it needs no administrator rights.
+
+The build is unsigned, so SmartScreen will warn on first run — **More info →
+Run anyway**.
+
+### Opening files
+
+Once installed, `.md` and `.markdown` files open in unmark from the file
+manager, and the command line takes paths:
+
+```bash
+unmark                      # empty document
+unmark notes.md             # opens the file
+unmark a.md b.md c.md       # one tab each
+```
+
+Running it again while a window is open adds tabs to that window rather than
+starting a second copy — two editors with separate ideas of which files are
+dirty is a good way to lose work.
+
+### Cross-building
+
+You can only build installers for the platform you are on. macOS dmg needs
+macOS; Windows NSIS needs Windows (or Wine). CI with a matrix of runners is the
+usual answer.
+
+### Running it without installing
+
+To try the app without producing an installer at all:
 
 ```bash
 pnpm install
-pnpm dev          # build the packages, then run the desktop app
-pnpm dev:libs     # rebuild packages on change — run alongside `pnpm dev`
-pnpm test         # everything
-pnpm typecheck
-pnpm lint
+pnpm dev
 ```
 
-> The app resolves `@md/core` to its **built** output, so a change under
-> `packages/` is invisible to a running dev server until it is rebuilt. Keep
-> `pnpm dev:libs` running in a second terminal while you work on the library.
+That is the development setup below, and it runs the same code.
 
-> **Running the desktop app from inside another Electron process** (an editor's
-> integrated terminal, for instance) inherits `ELECTRON_RUN_AS_NODE=1`, and
-> Electron will start as plain Node and fail with `Cannot read properties of
-> undefined (reading 'whenReady')`. Launch it as:
->
-> ```bash
-> env -u ELECTRON_RUN_AS_NODE -u ELECTRON_NO_ATTACH_CONSOLE pnpm dev
-> ```
+---
+
+## Development
+
+**Requirements:** Node 20 or newer, and pnpm 11 (`corepack enable` will pick
+up the right version from `packageManager` in `package.json`).
+
+```bash
+pnpm install
+pnpm dev
+```
+
+`pnpm dev` builds `@md/core` and `@md/react`, then starts electron-vite: the
+renderer gets a Vite dev server with hot reload, and the Electron window opens
+against it. Editing anything under `apps/desktop/src/renderer` updates the
+window immediately. Editing `src/main` or `src/preload` restarts Electron.
+
+**If you are also changing the library**, run this in a second terminal:
+
+```bash
+pnpm dev:libs     # rebuilds packages/* on every change
+```
+
+The app resolves `@md/core` to its **built** output, so a change under
+`packages/` is invisible to a running dev server without it. This is the single
+most common way to lose ten minutes here: you edit a decoration rule, nothing
+happens in the window, and the code looks right — because the app is still
+running the last build.
+
+### If Electron starts as plain Node
+
+```
+TypeError: Cannot read properties of undefined (reading 'whenReady')
+```
+
+Your terminal is running inside another Electron process — VS Code's integrated
+terminal, or an agent like Claude Code — and `ELECTRON_RUN_AS_NODE=1` is
+inherited. Electron then boots as a Node runtime with no `app` object. Clear it
+for the run:
+
+```bash
+env -u ELECTRON_RUN_AS_NODE -u ELECTRON_NO_ATTACH_CONSOLE pnpm dev
+```
+
+An external terminal does not have this problem.
+
+### The rest of the scripts
+
+```bash
+pnpm test         # everything, once
+pnpm test:watch
+pnpm typecheck    # tsc -b across all three projects
+pnpm lint         # also enforces the @md/core dependency boundary (I2)
+pnpm build:all    # packages and the desktop bundle
+pnpm clean
+```
+
+Run a single package's tests with `pnpm --filter @md/core test`.
 
 ### Layout
 
