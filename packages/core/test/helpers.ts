@@ -1,60 +1,68 @@
 import { EditorSelection, EditorState, type Extension } from '@codemirror/state'
 import { ensureSyntaxTree } from '@codemirror/language'
 import { buildDecorationRanges } from '../src/decorations/builder.js'
-import { defaultRules } from '../src/editor.js'
-import { markdownSetup } from '../src/editor.js'
+import { defaultRules, markdownSetup } from '../src/editor.js'
 import type { DecoRange, RuleTable } from '../src/decorations/types.js'
+
+/**
+ * Caret and selection markers. Deliberately characters that never occur in
+ * markdown — `|`, `[` and `]` are all real syntax (tables, links, tasks).
+ */
+export const CARET = '‸'
+export const SEL_START = '«'
+export const SEL_END = '»'
 
 export const baseExtensions = (extra: Extension[] = []): Extension[] => [
   ...markdownSetup({ codeLanguages: [], theme: false }),
   ...extra
 ]
 
-/**
- * `|` marks a caret; `[` and `]` mark a selection. Everything else is document
- * text. Returns a fully-parsed state so the tree is never partial.
- */
-export function stateFrom(marked: string, rules?: RuleTable): EditorState {
+export interface Marked {
+  doc: string
+  selection: EditorSelection
+}
+
+/** Strip the markers out of a marked-up string. */
+export function parseMarked(marked: string): Marked {
   let doc = ''
   let anchor = -1
   let head = -1
   for (const ch of marked) {
-    if (ch === '|') {
-      anchor = head = doc.length
-    } else if (ch === '[') {
-      anchor = doc.length
-    } else if (ch === ']') {
-      head = doc.length
-    } else {
-      doc += ch
-    }
+    if (ch === CARET) anchor = head = doc.length
+    else if (ch === SEL_START) anchor = doc.length
+    else if (ch === SEL_END) head = doc.length
+    else doc += ch
   }
-  const selection =
-    anchor >= 0 && head >= 0
-      ? EditorSelection.single(anchor, head)
-      : EditorSelection.single(0)
+  return {
+    doc,
+    selection:
+      anchor >= 0 && head >= 0 ? EditorSelection.single(anchor, head) : EditorSelection.single(0)
+  }
+}
 
-  const state = EditorState.create({ doc, selection, extensions: baseExtensions() })
-  // Force a complete parse: visible-range walking in the plugin relies on the
-  // viewport being parsed, and there is no viewport in a headless test.
-  ensureSyntaxTree(state, state.doc.length, 10_000)
-  void rules
+export function stateFrom(marked: string, extra: Extension[] = []): EditorState {
+  const { doc, selection } = parseMarked(marked)
+  const state = EditorState.create({ doc, selection, extensions: baseExtensions(extra) })
+  // Force a complete parse: the plugin normally relies on CodeMirror having
+  // parsed the viewport, and there is no viewport in a headless test.
+  ensureSyntaxTree(state, state.doc.length, 20_000)
   return state
 }
 
-export function decorate(marked: string, rules: RuleTable = defaultRules()): DecoRange[] {
-  const state = stateFrom(marked)
+export function decorateState(state: EditorState, rules: RuleTable = defaultRules()): DecoRange[] {
   return buildDecorationRanges(state, [{ from: 0, to: state.doc.length }], rules)
 }
 
+export function decorate(marked: string, rules: RuleTable = defaultRules()): DecoRange[] {
+  return decorateState(stateFrom(marked), rules)
+}
+
 /** The text a reader actually sees: the document minus every `replace` range. */
-export function rendered(marked: string, rules: RuleTable = defaultRules()): string {
-  const state = stateFrom(marked)
-  const ranges = buildDecorationRanges(state, [{ from: 0, to: state.doc.length }], rules)
+export function renderState(state: EditorState, rules: RuleTable = defaultRules()): string {
   const doc = state.doc.toString()
   let out = ''
   let pos = 0
-  for (const r of ranges) {
+  for (const r of decorateState(state, rules)) {
     if (r.kind !== 'replace') continue
     if (r.from > pos) out += doc.slice(pos, r.from)
     pos = Math.max(pos, r.to)
@@ -62,8 +70,16 @@ export function rendered(marked: string, rules: RuleTable = defaultRules()): str
   return out + doc.slice(pos)
 }
 
+export function rendered(marked: string, rules: RuleTable = defaultRules()): string {
+  return renderState(stateFrom(marked), rules)
+}
+
 /** Classes applied over a given document offset. */
-export function classesAt(marked: string, offset: number, rules: RuleTable = defaultRules()): string[] {
+export function classesAt(
+  marked: string,
+  offset: number,
+  rules: RuleTable = defaultRules()
+): string[] {
   return decorate(marked, rules)
     .filter((r) => r.kind === 'mark' && r.from <= offset && r.to > offset)
     .map((r) => r.class!)
@@ -73,7 +89,21 @@ export function classesAt(marked: string, offset: number, rules: RuleTable = def
 export function hidden(marked: string, rules: RuleTable = defaultRules()): string[] {
   const state = stateFrom(marked)
   const doc = state.doc.toString()
-  return buildDecorationRanges(state, [{ from: 0, to: state.doc.length }], rules)
+  return decorateState(state, rules)
     .filter((r) => r.kind === 'replace')
     .map((r) => doc.slice(r.from, r.to))
+}
+
+/** Line-decoration classes on a 1-based line number. */
+export function lineClasses(
+  marked: string,
+  lineNumber: number,
+  rules: RuleTable = defaultRules()
+): string[] {
+  const state = stateFrom(marked)
+  const line = state.doc.line(lineNumber)
+  return decorateState(state, rules)
+    .filter((r) => r.kind === 'line' && r.from === line.from)
+    .map((r) => r.class!)
+    .sort()
 }

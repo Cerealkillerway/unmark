@@ -24,6 +24,7 @@ export { buildDecorationRanges, sortDecoRanges, SYNTAX_CLASS } from './decoratio
 export { markdownDecorations, toDecorationSet } from './decorations/plugin.js'
 export { isRevealed } from './decorations/reveal.js'
 export { inlineRules } from './decorations/inline.js'
+export { blockRules, linkRules } from './decorations/block.js'
 export type { DecoKind, DecoRange, NodeRule, RuleTable, Span } from './decorations/types.js'
 
 export { markdownTheme } from './theme/theme.js'

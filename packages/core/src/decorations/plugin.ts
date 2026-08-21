@@ -12,6 +12,7 @@ import type { DecoRange, RuleTable } from './types.js'
 
 const REPLACE = Decoration.replace({})
 const markCache = new Map<string, Decoration>()
+const lineCache = new Map<string, Decoration>()
 
 function markFor(cls: string): Decoration {
   let deco = markCache.get(cls)
@@ -20,6 +21,20 @@ function markFor(cls: string): Decoration {
     markCache.set(cls, deco)
   }
   return deco
+}
+
+function lineFor(cls: string): Decoration {
+  let deco = lineCache.get(cls)
+  if (!deco) {
+    deco = Decoration.line({ class: cls })
+    lineCache.set(cls, deco)
+  }
+  return deco
+}
+
+function decorationFor(kind: DecoRange['kind'], cls: string): Decoration {
+  if (kind === 'replace') return REPLACE
+  return kind === 'line' ? lineFor(cls) : markFor(cls)
 }
 
 /**
@@ -33,7 +48,7 @@ export function toDecorationSet(ranges: readonly DecoRange[]): DecorationSet {
   const items = ranges.map((r) => ({
     from: r.from,
     to: r.to,
-    value: r.kind === 'replace' ? REPLACE : markFor(r.class ?? 'cm-md-syntax')
+    value: decorationFor(r.kind, r.class ?? 'cm-md-syntax')
   }))
   items.sort((a, b) => a.from - b.from || a.value.startSide - b.value.startSide)
 

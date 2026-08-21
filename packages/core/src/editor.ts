@@ -1,6 +1,5 @@
 import {
   bracketMatching,
-  foldGutter,
   indentOnInput,
   syntaxHighlighting
 } from '@codemirror/language'
@@ -17,6 +16,7 @@ import {
 } from '@codemirror/view'
 import { lineSeparatorFor } from './document.js'
 import { markdownDecorations } from './decorations/plugin.js'
+import { blockRules, linkRules } from './decorations/block.js'
 import { inlineRules } from './decorations/inline.js'
 import type { RuleTable } from './decorations/types.js'
 import { markdownLanguage, type MarkdownLanguageOptions } from './markdown.js'
@@ -32,7 +32,7 @@ export interface MarkdownSetupOptions extends MarkdownLanguageOptions {
 
 /** Every rule the decoration plugin knows about. */
 export function defaultRules(): RuleTable {
-  return { ...inlineRules }
+  return { ...blockRules, ...linkRules, ...inlineRules }
 }
 
 /**
@@ -105,6 +105,3 @@ export function createEditor(config: CreateEditorConfig): EditorView {
     })
   })
 }
-
-// foldGutter is re-exported so apps can opt in without adding a CodeMirror dep.
-export { foldGutter }
