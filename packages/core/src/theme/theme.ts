@@ -61,9 +61,9 @@ export const markdownTheme = EditorView.theme({
   },
 
   /* Headings. Sizes live on the line so the whole line reflows. */
-  '.cm-md-line-h1': { fontSize: 'var(--md-h1-size)', lineHeight: '1.22', padding: '0.7em 0 0.15em' },
-  '.cm-md-line-h2': { fontSize: 'var(--md-h2-size)', lineHeight: '1.3', padding: '0.7em 0 0.1em' },
-  '.cm-md-line-h3': { fontSize: 'var(--md-h3-size)', lineHeight: '1.35', padding: '0.6em 0 0.1em' },
+  '.cm-md-line-h1': { fontSize: 'var(--md-h1-size)', lineHeight: 'var(--md-heading-line-height)', padding: '0.7em 0 0.15em' },
+  '.cm-md-line-h2': { fontSize: 'var(--md-h2-size)', lineHeight: 'var(--md-heading-line-height)', padding: '0.7em 0 0.1em' },
+  '.cm-md-line-h3': { fontSize: 'var(--md-h3-size)', lineHeight: 'var(--md-heading-line-height)', padding: '0.6em 0 0.1em' },
   '.cm-md-line-h4': { fontSize: 'var(--md-h4-size)', padding: '0.5em 0 0.1em' },
   '.cm-md-line-h5': { fontSize: 'var(--md-h5-size)', padding: '0.5em 0 0.1em' },
   '.cm-md-line-h6': { fontSize: 'var(--md-h6-size)', padding: '0.5em 0 0.1em' },

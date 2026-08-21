@@ -583,7 +583,14 @@ button {
 
 /* ------------------------------------------- @md/core theming contract */
 
-.cm-md-editor {
+/*
+ * The whole editor is restyled from this one block, and there is not a single
+ * `.cm-*` selector in this file — that is the §4.7 contract, and it is what
+ * makes @md/core themeable by an app that knows nothing about CodeMirror.
+ * It sits on `.app`, which carries `data-theme`, so light/dark is the same
+ * variables with different values.
+ */
+.app {
   --md-color-bg: var(--bg);
   --md-color-text: var(--text);
   --md-color-muted: var(--text-2);
