@@ -14,7 +14,11 @@ import {
   keymap,
   rectangularSelection
 } from '@codemirror/view'
-import { lineSeparatorFor } from './document.js'
+import { commandKeymap } from './commands/keymap.js'
+import { formatCommands } from './commands/format.js'
+import { CommandRegistry } from './commands/registry.js'
+import type { AppBridge } from './commands/types.js'
+import { lineSeparatorFor, serializeDocument } from './document.js'
 import { markdownDecorations } from './decorations/plugin.js'
 import { blockRules, linkRules } from './decorations/block.js'
 import { inlineRules } from './decorations/inline.js'
@@ -28,11 +32,29 @@ export interface MarkdownSetupOptions extends MarkdownLanguageOptions {
   rules?: RuleTable
   /** Drop the bundled theme and highlight style. */
   theme?: boolean
+  /**
+   * The registry the keymap is derived from (I4). Pass the same instance the
+   * shell builds its menus and palette from, so a shortcut and a menu item can
+   * never disagree. `false` omits the format keymap entirely.
+   */
+  commands?: CommandRegistry | false
+  /** Handed to every command as `ctx.app`. */
+  app?: AppBridge
 }
 
 /** Every rule the decoration plugin knows about. */
 export function defaultRules(): RuleTable {
   return { ...blockRules, ...linkRules, ...inlineRules }
+}
+
+/**
+ * A fresh registry holding the built-in format commands.
+ *
+ * Fresh, not shared: `register` throws on duplicate ids, so a module-level
+ * singleton would make two editors on one page fight over it.
+ */
+export function defaultCommands(): CommandRegistry {
+  return new CommandRegistry(formatCommands)
 }
 
 /**
@@ -42,7 +64,13 @@ export function defaultRules(): RuleTable {
  * Line wrapping is on because this is a prose editor.
  */
 export function markdownSetup(options: MarkdownSetupOptions = {}): Extension[] {
-  const { rules = defaultRules(), theme = true, ...language } = options
+  const {
+    rules = defaultRules(),
+    theme = true,
+    commands = defaultCommands(),
+    app = {},
+    ...language
+  } = options
 
   return [
     markdownLanguage(language),
@@ -61,6 +89,9 @@ export function markdownSetup(options: MarkdownSetupOptions = {}): Extension[] {
     EditorView.editorAttributes.of({ class: 'cm-md-editor' }),
     EditorView.contentAttributes.of({ spellcheck: 'true', autocapitalize: 'off' }),
 
+    // Prec.high lives inside commandKeymap — without it the base keymap below
+    // wins on overlapping bindings.
+    ...(commands === false ? [] : [commandKeymap(commands, (view) => ({ view, app }))]),
     keymap.of([...defaultKeymap, ...historyKeymap]),
 
     ...(theme ? [markdownTheme, syntaxHighlighting(markdownHighlightStyle)] : [])
@@ -86,7 +117,9 @@ export function createEditor(config: CreateEditorConfig): EditorView {
   const listener = onChange
     ? [
         EditorView.updateListener.of((update) => {
-          if (update.docChanged) onChange(update.state.doc.toString(), update.view)
+          // serializeDocument, not doc.toString(): Text always joins with \n,
+          // which would silently rewrite a CRLF file (I1).
+          if (update.docChanged) onChange(serializeDocument(update.state), update.view)
         })
       ]
     : []

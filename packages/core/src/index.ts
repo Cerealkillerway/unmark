@@ -6,7 +6,7 @@
  * rendering is decorations layered over that text, and nothing else.
  */
 
-export { createEditor, defaultRules, markdownSetup } from './editor.js'
+export { createEditor, defaultCommands, defaultRules, markdownSetup } from './editor.js'
 export type { CreateEditorConfig, MarkdownSetupOptions } from './editor.js'
 
 export {
@@ -26,6 +26,37 @@ export { isRevealed } from './decorations/reveal.js'
 export { inlineRules } from './decorations/inline.js'
 export { blockRules, linkRules } from './decorations/block.js'
 export type { DecoKind, DecoRange, NodeRule, RuleTable, Span } from './decorations/types.js'
+
+export {
+  bindingsFor,
+  commandKeymap,
+  CommandRegistry,
+  formatCommands,
+  headingPrefix,
+  toAccelerator,
+  toggleLinePrefix,
+  toggleLink,
+  toggleWrap,
+  toKeyBinding,
+  PREFIX_BULLET,
+  PREFIX_ORDERED,
+  PREFIX_QUOTE,
+  PREFIX_TASK,
+  WRAP_CODE,
+  WRAP_EMPHASIS,
+  WRAP_STRIKETHROUGH,
+  WRAP_STRONG
+} from './commands/index.js'
+export type {
+  AppBridge,
+  CommandContext,
+  CommandDef,
+  CommandDescriptor,
+  CommandScope,
+  ContextFor,
+  LinePrefixSpec,
+  WrapSpec
+} from './commands/index.js'
 
 export { markdownTheme } from './theme/theme.js'
 export { markdownHighlightStyle } from './theme/highlight.js'
