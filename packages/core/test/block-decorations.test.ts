@@ -7,6 +7,7 @@ import { buildDecorationRanges } from '../src/decorations/builder.js'
 import { defaultRules, markdownSetup } from '../src/editor.js'
 import {
   classesAt,
+  collapsed,
   decorate,
   hidden,
   lineClasses as lineClassesOn,
@@ -81,16 +82,52 @@ describe('thematic breaks', () => {
   })
 })
 
-describe('fenced code — §4.2 hard exception', () => {
+describe('fenced code', () => {
   const fence = '```js\nconst a = 1\n```'
 
-  it('never hides the fences or the language tag', () => {
-    expect(rendered(fence + '‸')).toBe(fence)
+  it('collapses both fence lines when the caret is elsewhere', () => {
+    expect(collapsed('text\n\n' + fence + '\n\nmore‸')).toEqual(['```js', '```'])
+  })
+
+  it('leaves them to the builder, which never replaces them inline', () => {
+    // An inline replace would empty the line but keep it: two blank rows
+    // above and below the code. Only the state field can take the line.
+    expect(rendered('text\n\n' + fence + '\n\nmore‸')).toContain('```js')
     expect(hidden(fence + '‸')).toEqual([])
   })
 
-  it('keeps them visible even with the caret far away', () => {
-    expect(rendered('text\n\n' + fence + '\n\nmore‸')).toContain('```js')
+  it('brings them back for a caret anywhere on the block', () => {
+    expect(collapsed('```js\nconst‸ a = 1\n```')).toEqual([])
+    expect(collapsed('```j‸s\nconst a = 1\n```')).toEqual([])
+    // Both ends included: the language tag has to stay reachable, and typing
+    // the closing fence must not delete the line under the caret.
+    expect(collapsed('‸```js\nconst a = 1\n```')).toEqual([])
+    expect(collapsed('```js\nconst a = 1\n```‸')).toEqual([])
+  })
+
+  it('collapses again as soon as the caret leaves the block', () => {
+    expect(collapsed(fence + '\n‸')).toEqual(['```js', '```'])
+  })
+
+  it('reveals for a selection that only touches the block', () => {
+    expect(collapsed('«text\n\n```js»\nconst a = 1\n```')).toEqual([])
+  })
+
+  it('keeps a block with no body — collapsing it would erase it', () => {
+    expect(collapsed('```js\n```\n\nafter‸')).toEqual([])
+    expect(collapsed('```js‸')).toEqual([])
+  })
+
+  it('collapses only the opening fence of an unterminated block', () => {
+    expect(collapsed('text‸\n\n```js\ncode')).toEqual(['```js'])
+  })
+
+  it('takes the quote prefix and the indent with the line', () => {
+    expect(collapsed('> ```js\n> code\n> ```\n\nafter‸')).toEqual(['> ```js', '> ```'])
+    expect(collapsed('- item\n\n  ```js\n  code\n  ```\n\nafter‸')).toEqual([
+      '  ```js',
+      '  ```'
+    ])
   })
 
   it('marks every line of the block', () => {

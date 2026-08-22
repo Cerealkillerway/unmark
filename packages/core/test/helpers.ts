@@ -1,6 +1,7 @@
 import { EditorSelection, EditorState, type Extension } from '@codemirror/state'
 import { ensureSyntaxTree } from '@codemirror/language'
 import { buildDecorationRanges } from '../src/decorations/builder.js'
+import { collapsedLineRanges } from '../src/decorations/lines.js'
 import { defaultRules, markdownSetup } from '../src/editor.js'
 import type { DecoRange, RuleTable } from '../src/decorations/types.js'
 
@@ -92,6 +93,19 @@ export function hidden(marked: string, rules: RuleTable = defaultRules()): strin
   return decorateState(state, rules)
     .filter((r) => r.kind === 'replace')
     .map((r) => doc.slice(r.from, r.to))
+}
+
+/**
+ * The whole lines the block-level source takes away, as text.
+ *
+ * `rendered` only ever shows the builder's work; a collapsed line is gone
+ * from the page but still in the document, so it needs its own view.
+ */
+export function collapsed(marked: string, rules: RuleTable = defaultRules()): string[] {
+  const state = stateFrom(marked)
+  return collapsedLineRanges(state, rules).map((line) =>
+    state.doc.sliceString(line.from, line.to)
+  )
 }
 
 /** Line-decoration classes on a 1-based line number. */

@@ -8,6 +8,7 @@ import {
   type ViewUpdate
 } from '@codemirror/view'
 import { buildDecorationRanges } from './builder.js'
+import { collapsedLines } from './lines.js'
 import type { DecoRange, RuleTable } from './types.js'
 
 const REPLACE = Decoration.replace({})
@@ -62,12 +63,22 @@ function compute(view: EditorView, rules: RuleTable): DecorationSet {
 }
 
 /**
- * The single ViewPlugin that owns the decoration set (§4.1).
+ * The two decoration sources (§4.1): the ViewPlugin below, which owns
+ * everything that fits inside a line, and the state field from `lines.ts`,
+ * which collapses whole lines — a ViewPlugin is not allowed to, since that
+ * changes the editor's vertical layout.
+ */
+export function markdownDecorations(rules: RuleTable): Extension {
+  return [collapsedLines(rules), inlineDecorations(rules)]
+}
+
+/**
+ * The ViewPlugin that owns the inline decoration set.
  *
  * Rebuilt on document change, selection change, viewport change, and when the
  * incremental parser produces a newer tree for the same document.
  */
-export function markdownDecorations(rules: RuleTable): Extension {
+function inlineDecorations(rules: RuleTable): Extension {
   return ViewPlugin.fromClass(
     class {
       decorations: DecorationSet

@@ -8,7 +8,7 @@ import type { DecoRange, NodeRule, RuleTable, Span } from './types.js'
 export const SYNTAX_CLASS = 'cm-md-syntax'
 
 /** @lezer/markdown names most syntax-character nodes `…Mark`. */
-function isMarker(name: string, rule: NodeRule): boolean {
+export function isMarker(name: string, rule: NodeRule): boolean {
   return rule.markerNames ? rule.markerNames.includes(name) : name.endsWith('Mark')
 }
 

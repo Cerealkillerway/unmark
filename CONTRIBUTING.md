@@ -93,10 +93,16 @@ Nine failure modes account for most of the surprises here:
 6. **IME composition.** See I6.
 7. **String-matching `toggleWrap`.** Produces `****text****`. Use the tree.
 8. **Whole-document tree walks.** Typing lag in large files. Iterate
-   `view.visibleRanges`.
-9. **Hidden fence markers.** Users cannot change a code block's language.
-   Fences, front matter and setext underlines are deliberate exceptions to the
-   reveal rule.
+   `view.visibleRanges`. The one place that cannot — the block-decoration
+   field, which the height map reads for the whole document — refuses to
+   descend into anything that cannot hold a block, so the walk stays
+   proportional to blocks rather than to nodes.
+9. **Hiding a whole line with an inline `replace`.** The text goes and the
+   line stays, as a blank row. Collapsing a line takes a block decoration,
+   which a ViewPlugin is not allowed to provide — that is what the state
+   field in `decorations/lines.ts` is for, and how a code block hides its
+   fences. Front matter and setext underlines stay deliberate exceptions to
+   the reveal rule.
 
 ## Tests
 

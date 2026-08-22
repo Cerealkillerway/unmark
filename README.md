@@ -45,6 +45,19 @@ fetch remote images**: a tracking pixel in a document you merely opened would
 report your IP to whoever wrote it, and this app has no telemetry of its own to
 make that a fair trade. Remote images stay as their alt text.
 
+### Code blocks
+
+A fenced block shows its highlighted code and nothing else — the ``` lines go
+with the rest of the syntax. Put the caret anywhere in the block and both
+fences come back, language tag included, so the language stays editable. A
+block with no body keeps its fences: there would be nothing left of it
+otherwise.
+
+Front matter and setext underlines are the constructs that stay visible. A
+`---` fence that vanished would take a document's metadata off the page with
+it, and a setext heading with no underline is indistinguishable from a
+paragraph.
+
 Editable inline tables are not implemented. They are their own project, not a
 corner of this one.
 

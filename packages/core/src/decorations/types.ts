@@ -40,8 +40,9 @@ export interface NodeRule {
    */
   readonly marker?: string
   /**
-   * Markers of this node are never hidden. §4.2 hard exceptions: fenced code
-   * (the language tag must stay editable), front matter, and tables.
+   * Markers of this node are never replaced inline. §4.2 hard exceptions:
+   * front matter and tables — and fenced code, which hides its fences a line
+   * at a time instead (`hideLines`).
    */
   readonly keepMarkers?: boolean
   /**
@@ -70,6 +71,18 @@ export interface NodeRule {
    * decoration draws the rule.
    */
   readonly hideSelf?: boolean
+  /**
+   * Collapse the node's outer lines — the whole first and last line, when a
+   * marker sits on them — while the node is not revealed. This is what makes
+   * a fenced code block hide its ``` lines instead of leaving them as two
+   * blank rows.
+   *
+   * Handled by the state field in `lines.ts`, not by the builder: replacing a
+   * line break changes the vertical layout, and a ViewPlugin may not do that.
+   * A block whose every line carries a marker is left alone — collapsing it
+   * would erase it from the page entirely.
+   */
+  readonly hideLines?: boolean
 }
 
 export type RuleTable = Readonly<Record<string, NodeRule>>

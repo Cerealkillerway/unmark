@@ -12,9 +12,11 @@ const heading = (level: 1 | 2 | 3 | 4 | 5 | 6): NodeRule => ({
  * Hiding it would mean collapsing the line, and a replacing decoration that
  * covers a line break cannot be supplied by a ViewPlugin — CodeMirror computes
  * vertical layout before plugins update, so those must come from a state
- * field. Rather than run a second decoration source for one rare construct,
- * the underline is shown in muted syntax type under the heading. This is the
- * same kind of documented exception as §4.2's fences and front matter.
+ * field. There is now such a field — `lines.ts`, which fenced code uses — and
+ * `hideLines` here would collapse the underline. It stays visible anyway: a
+ * setext heading is already styled as a heading, and an underline that
+ * disappears leaves `Title` looking like a paragraph the reader cannot tell
+ * from one. §4.2 lists it as an exception; nothing has changed that.
  */
 const setext = (level: 1 | 2): NodeRule => ({
   line: `cm-md-line-h${level}`,
@@ -25,13 +27,17 @@ const setext = (level: 1 | 2): NodeRule => ({
 /**
  * Block nodes (Phase 2).
  *
- * Three groups keep their markers on purpose:
- *  - FencedCode: §4.2 hard exception. The fences and the info string are
- *    structural and the language tag must stay editable.
+ * Two groups keep their markers on purpose:
  *  - Frontmatter: §4.2 hard exception.
  *  - Lists and tables: hiding `1.` would destroy the numbering and hiding a
  *    table's pipes would destroy the column structure. §4.2 puts tables out of
  *    scope for v1 — styled monospace, no hiding.
+ *
+ * FencedCode used to be a third: its markers were kept because a fence cannot
+ * be hidden with an inline `replace` — the line would stay behind as a blank
+ * row — and the language tag has to stay editable. It now hides its two fence
+ * lines whole (`hideLines`, see `lines.ts`), and the caret landing anywhere on
+ * the block brings them back, language tag included.
  */
 export const blockRules: RuleTable = {
   ATXHeading1: heading(1),
@@ -60,7 +66,15 @@ export const blockRules: RuleTable = {
   // The `---` is the syntax; the line decoration draws the actual rule.
   HorizontalRule: { line: 'cm-md-line-hr', hideSelf: true },
 
-  FencedCode: { line: 'cm-md-line-code', keepMarkers: true, marker: 'cm-md-fence' },
+  // `keepMarkers` and `hideLines` together: the builder never replaces a fence
+  // inline (that would leave the line behind, empty), and the state field
+  // takes the whole line away instead.
+  FencedCode: {
+    line: 'cm-md-line-code',
+    keepMarkers: true,
+    hideLines: true,
+    marker: 'cm-md-fence'
+  },
   CodeInfo: { whole: 'cm-md-code-info' },
   CodeBlock: { line: 'cm-md-line-code' },
 

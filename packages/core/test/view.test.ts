@@ -65,3 +65,25 @@ describe('the decoration plugin in a live view', () => {
     expect(v.contentDOM.textContent).toContain('test')
   })
 })
+
+/**
+ * The one thing the pure `(doc, selection) -> ranges` tests cannot show: a
+ * collapsed fence takes its whole line with it. An inline replace would leave
+ * an empty `.cm-line` behind, which is why this needs a live view.
+ */
+describe('collapsed fence lines in a live view', () => {
+  const doc = 'text\n\n```js\nconst a = 1\n```\n\nmore'
+  const lines = (v: EditorView): string[] =>
+    Array.from(v.contentDOM.querySelectorAll('.cm-line')).map((el) => el.textContent ?? '')
+
+  it('removes the fence lines from the DOM, not just their text', () => {
+    const v = mount(doc, 0)
+    expect(lines(v)).toEqual(['text', '', 'const a = 1', '', 'more'])
+  })
+
+  it('puts them back when the caret enters the block', () => {
+    const v = mount(doc, 0)
+    v.dispatch({ selection: EditorSelection.single(doc.indexOf('const')) })
+    expect(lines(v)).toEqual(['text', '', '```js', 'const a = 1', '```', '', 'more'])
+  })
+})
