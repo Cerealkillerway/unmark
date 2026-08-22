@@ -17,6 +17,7 @@ import {
 import { markdownClipboard, type ClipboardOptions } from './clipboard/index.js'
 import { commandKeymap } from './commands/keymap.js'
 import { formatCommands } from './commands/format.js'
+import { viewCommands } from './commands/view.js'
 import { CommandRegistry } from './commands/registry.js'
 import type { AppBridge } from './commands/types.js'
 import { lineSeparatorFor, serializeDocument } from './document.js'
@@ -69,7 +70,7 @@ export function defaultRules(): RuleTable {
  * singleton would make two editors on one page fight over it.
  */
 export function defaultCommands(): CommandRegistry {
-  return new CommandRegistry(formatCommands)
+  return new CommandRegistry([...formatCommands, ...viewCommands])
 }
 
 /**

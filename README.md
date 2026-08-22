@@ -38,12 +38,35 @@ A link renders as its label; `](https://…)` folds away with everything else.
 clickable before you commit to it. Move the caret in and the URL comes back for
 editing, like any other syntax.
 
-Images render in place when the app gives `@md/core` a way to resolve their
-`src` — the library cannot know where your document lives. The desktop app
-serves local files through a read-only `unmark-asset:` scheme, and **does not
-fetch remote images**: a tracking pixel in a document you merely opened would
-report your IP to whoever wrote it, and this app has no telemetry of its own to
-make that a fair trade. Remote images stay as their alt text.
+Images can render in place, but only when the app gives `@md/core` a way to
+resolve their `src` — the library cannot know where your document lives. The
+desktop app serves local files through a read-only `unmark-asset:` scheme, and
+**does not fetch remote images**: a tracking pixel in a document you merely
+opened would report your IP to whoever wrote it, and this app has no telemetry
+of its own to make that a fair trade.
+
+An image reads as its alt text by default, styled like the link it is — the
+same thing the editor does with every other construct. **Toggle Image Preview**
+draws the picture in its place instead — `Ctrl/Cmd+Shift+M`, or the View menu,
+or the command palette, all three from the one registry entry.
+
+The caret outranks the mode in both directions. Wherever it sits inside an
+image, you get the whole `![alt](src)` back to edit, exactly as with every
+other marker — preview mode does not make an image uneditable. And whenever
+that markdown is revealed, a preview of the picture floats above the line, so
+the one moment the image would otherwise be off screen is the one moment you
+are typing its path. No shortcut for that part: if the syntax is showing, so
+is the image.
+
+A source that will not load — a typo in the path, or one the shell declines to
+resolve — draws a broken-image placeholder carrying the alt text, in place and
+in the floating preview alike. It never becomes the browser's own broken-image
+glyph, which would not say which image failed.
+
+Preview mode is per editor and lives in editor state, so it is not remembered
+between sessions. It does not override the remote-image policy above: an
+`https://` image has no resolvable source, so it shows the placeholder rather
+than being fetched.
 
 ### Code blocks
 
@@ -186,17 +209,17 @@ Everything lands in `apps/desktop/release/`.
 
 ```bash
 # AppImage — no install, just run it
-chmod +x apps/desktop/release/unmark-1.0.0.AppImage
-./apps/desktop/release/unmark-1.0.0.AppImage
+chmod +x apps/desktop/release/unmark-2.0.0.AppImage
+./apps/desktop/release/unmark-2.0.0.AppImage
 
 # .deb — Debian, Ubuntu, Mint
-sudo apt install ./apps/desktop/release/unmark-desktop_1.0.0_amd64.deb
+sudo apt install ./apps/desktop/release/unmark-desktop_2.0.0_amd64.deb
 unmark                                     # now on your PATH
 unmark notes.md                            # or open a file directly
 
 # tarball — unpack anywhere
-tar xzf apps/desktop/release/unmark-desktop-1.0.0.tar.gz
-./unmark-desktop-1.0.0/unmark
+tar xzf apps/desktop/release/unmark-desktop-2.0.0.tar.gz
+./unmark-desktop-2.0.0/unmark
 ```
 
 The `.deb` puts unmark in your application menu, registers it as a handler for

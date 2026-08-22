@@ -144,7 +144,11 @@ export const markdownTheme = EditorView.theme({
   },
   '.cm-md-line-linkref': { color: 'var(--md-color-muted)' },
 
-  /* Image previews. */
+  /* Images. */
+  '.cm-md-image-wrap': {
+    display: 'inline-block',
+    verticalAlign: 'top'
+  },
   '.cm-md-image': {
     display: 'inline-block',
     maxWidth: '100%',
@@ -152,11 +156,64 @@ export const markdownTheme = EditorView.theme({
     border: '1px solid var(--md-color-border)',
     verticalAlign: 'top'
   },
-  '.cm-md-image-missing': {
+
+  /*
+   * A source that will not load — unresolvable, or broken on load. Deliberately
+   * legible rather than decorative: the alt text is the only clue to which
+   * image failed, so it stays readable and the frame around it just says
+   * "picture, missing".
+   */
+  '.cm-md-image-broken': {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '0.4em',
+    maxWidth: '100%',
+    padding: '0.15em 0.5em',
+    borderRadius: '6px',
+    border: '1px dashed var(--md-color-border)',
+    color: 'var(--md-color-muted)',
+    verticalAlign: 'top'
+  },
+  '.cm-md-image-broken-icon': {
+    width: '1.1em',
+    height: '1.1em',
+    flex: '0 0 auto'
+  },
+  '.cm-md-image-broken-label': {
     fontFamily: 'var(--md-font-mono)',
     fontSize: 'var(--md-mono-size)',
-    color: 'var(--md-color-muted)',
-    borderBottom: '1px dashed var(--md-color-border)'
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap'
+  },
+
+  /*
+   * The floating preview shown while the caret is inside an image's markdown.
+   * `.cm-tooltip` already carries a border and background from CodeMirror's
+   * base theme; both are overridden here so the panel follows §4.7's custom
+   * properties like everything else.
+   */
+  '.cm-tooltip:has(.cm-md-image-lightbox)': {
+    border: '1px solid var(--md-color-border)',
+    borderRadius: '8px',
+    backgroundColor: 'var(--md-color-bg)',
+    overflow: 'hidden'
+  },
+  // The content inside is display:block or inline-flex, so there is no
+  // baseline gap to collapse and no line-height to set — which keeps §4.7's
+  // "typography comes from the contract" rule intact here.
+  '.cm-md-image-lightbox': {
+    display: 'block',
+    padding: '4px'
+  },
+  '.cm-md-image-lightbox img': {
+    display: 'block',
+    maxWidth: 'min(420px, 60vw)',
+    borderRadius: '4px'
+  },
+  '.cm-md-image-lightbox .cm-md-image-broken': {
+    border: '0',
+    whiteSpace: 'normal'
   },
 
   /* Holding Mod turns links into something you can click. */

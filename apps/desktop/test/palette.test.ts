@@ -75,6 +75,35 @@ describe('the command palette', () => {
     expect(filterCommands(descriptors, 'zzzz')).toEqual([])
   })
 
+  it('lists the image toggle, and finds it by the words someone would type', () => {
+    const { registry, ctx } = harness()
+    const descriptors = registry.describe(ctx)
+    expect(descriptors.some((c) => c.id === 'view.imagePreview')).toBe(true)
+    for (const query of ['toggle', 'image', 'preview']) {
+      expect(filterCommands(descriptors, query).map((c) => c.id), query).toContain(
+        'view.imagePreview'
+      )
+    }
+  })
+
+  /**
+   * The palette matches on the label, so a view toggle named anything other
+   * than "Toggle …" is invisible to the one word most people will type. This
+   * is the test that keeps the family together.
+   */
+  it('names every view toggle so a single query finds them all', () => {
+    const { registry, ctx } = harness()
+    const found = filterCommands(registry.describe(ctx), 'toggle').map((c) => c.id)
+    expect(found).toEqual(
+      expect.arrayContaining([
+        'view.imagePreview',
+        'view.toggleSidebar',
+        'view.toggleOutline',
+        'view.toggleTheme'
+      ])
+    )
+  })
+
   it('labels a command with its category', () => {
     expect(commandLabel({ id: 'x', title: 'Bold', category: 'Format', scope: 'editor', enabled: true })).toBe(
       'Format: Bold'

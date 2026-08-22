@@ -36,7 +36,12 @@ export { buildDecorationRanges, sortDecoRanges, SYNTAX_CLASS } from './decoratio
 export { markdownDecorations, toDecorationSet } from './decorations/plugin.js'
 export { collapsedLines, collapsedLineRanges, collapsibleBlocks } from './decorations/lines.js'
 export type { Collapsible } from './decorations/lines.js'
-export { imagePreviews } from './decorations/images.js'
+export {
+  imagePreviews,
+  imagePreviewsInstalled,
+  imagePreviewActive,
+  toggleImagePreview
+} from './decorations/images.js'
 export type { ImageOptions } from './decorations/images.js'
 export { isLineRevealed, isRevealed } from './decorations/reveal.js'
 export { inlineRules } from './decorations/inline.js'
@@ -54,6 +59,7 @@ export {
   toggleLink,
   toggleWrap,
   toKeyBinding,
+  viewCommands,
   PREFIX_BULLET,
   PREFIX_ORDERED,
   PREFIX_QUOTE,

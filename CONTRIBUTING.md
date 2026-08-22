@@ -77,7 +77,7 @@ and it is invisible in testing unless you look for it.
 
 ## Before you debug something that "should work"
 
-Nine failure modes account for most of the surprises here:
+Ten failure modes account for most of the surprises here:
 
 1. **Two copies of `@codemirror/state`.** Cryptic runtime errors about state
    instances. Every `@codemirror/*` package is a peer dependency for this
@@ -103,6 +103,13 @@ Nine failure modes account for most of the surprises here:
    field in `decorations/lines.ts` is for, and how a code block hides its
    fences. Front matter and setext underlines stay deliberate exceptions to
    the reveal rule.
+10. **Two `replace` decorations over the same text.** The image widget covers a
+    whole `![alt](src)` node while the decoration engine covers the markers
+    inside it. At equal precedence CodeMirror resolves that pair
+    inconsistently — the first render looks right and the next edit drops the
+    widget, blanking the line until some later transaction rebuilds it. An
+    outer replacement has to outrank the inner one (`Prec.high`), the same way
+    the command keymap has to outrank the base one.
 
 ## Tests
 

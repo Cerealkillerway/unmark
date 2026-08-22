@@ -10,6 +10,7 @@ export { toAccelerator, toKeyBinding } from './accelerator.js'
 export { bindingsFor, commandKeymap } from './keymap.js'
 export type { ContextFor } from './keymap.js'
 export { formatCommands } from './format.js'
+export { viewCommands } from './view.js'
 export {
   headingPrefix,
   toggleLinePrefix,
