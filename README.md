@@ -346,7 +346,7 @@ TypeError: Cannot read properties of undefined (reading 'whenReady')
 ```
 
 Your terminal is running inside another Electron process — VS Code's integrated
-terminal, or an agent like Claude Code — and `ELECTRON_RUN_AS_NODE=1` is
+terminal, or a coding agent hosted in one — and `ELECTRON_RUN_AS_NODE=1` is
 inherited. Electron then boots as a Node runtime with no `app` object.
 
 `pnpm dev` clears both variables for the child process and says so, so this
