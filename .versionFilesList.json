@@ -1,0 +1,23 @@
+{
+  "name": "unmark-workspace",
+  "currentVersion": "1.0.0",
+  "versionPrefix": "v",
+  "files": [
+    {
+      "path": "package.json",
+      "type": "package"
+    },
+    {
+      "path": "README.md",
+      "type": "normal"
+    },
+    {
+      "path": "packages/*/package.json",
+      "type": "package"
+    },
+    {
+      "path": "apps/*/package.json",
+      "type": "package"
+    }
+  ]
+}

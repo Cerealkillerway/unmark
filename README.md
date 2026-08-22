@@ -186,17 +186,17 @@ Everything lands in `apps/desktop/release/`.
 
 ```bash
 # AppImage — no install, just run it
-chmod +x apps/desktop/release/unmark-0.1.0.AppImage
-./apps/desktop/release/unmark-0.1.0.AppImage
+chmod +x apps/desktop/release/unmark-1.0.0.AppImage
+./apps/desktop/release/unmark-1.0.0.AppImage
 
 # .deb — Debian, Ubuntu, Mint
-sudo apt install ./apps/desktop/release/unmark-desktop_0.1.0_amd64.deb
+sudo apt install ./apps/desktop/release/unmark-desktop_1.0.0_amd64.deb
 unmark                                     # now on your PATH
 unmark notes.md                            # or open a file directly
 
 # tarball — unpack anywhere
-tar xzf apps/desktop/release/unmark-desktop-0.1.0.tar.gz
-./unmark-desktop-0.1.0/unmark
+tar xzf apps/desktop/release/unmark-desktop-1.0.0.tar.gz
+./unmark-desktop-1.0.0/unmark
 ```
 
 The `.deb` puts unmark in your application menu, registers it as a handler for
