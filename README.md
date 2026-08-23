@@ -10,6 +10,13 @@ Typing the final `*` of `**test**` makes the word bold and the asterisks
 disappear. Move the caret back in and they come home. There is no source view,
 no preview pane, and no button that switches between them.
 
+The two ends of a construct are not quite symmetric, and on purpose. The caret
+one step *past* the end leaves it rendered — that is what makes the closing `*`
+take effect on the keystroke. The caret on its *first* position keeps it open,
+because that is where you type the character that changes what it is: a `!` in
+front of `[link](photo.jpg)` turns the link into an image, and you cannot aim
+at a marker that has collapsed.
+
 <img src="docs/demo.gif" alt="Typing in unmark: the markdown syntax renders and folds away as it is written, and comes back when the caret moves into it." width="880">
 
 </div>
@@ -209,17 +216,17 @@ Everything lands in `apps/desktop/release/`.
 
 ```bash
 # AppImage — no install, just run it
-chmod +x apps/desktop/release/unmark-2.0.0.AppImage
-./apps/desktop/release/unmark-2.0.0.AppImage
+chmod +x apps/desktop/release/unmark-2.0.1.AppImage
+./apps/desktop/release/unmark-2.0.1.AppImage
 
 # .deb — Debian, Ubuntu, Mint
-sudo apt install ./apps/desktop/release/unmark-desktop_2.0.0_amd64.deb
+sudo apt install ./apps/desktop/release/unmark-desktop_2.0.1_amd64.deb
 unmark                                     # now on your PATH
 unmark notes.md                            # or open a file directly
 
 # tarball — unpack anywhere
-tar xzf apps/desktop/release/unmark-desktop-2.0.0.tar.gz
-./unmark-desktop-2.0.0/unmark
+tar xzf apps/desktop/release/unmark-desktop-2.0.1.tar.gz
+./unmark-desktop-2.0.1/unmark
 ```
 
 The `.deb` puts unmark in your application menu, registers it as a handler for

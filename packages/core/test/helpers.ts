@@ -36,8 +36,14 @@ export function parseMarked(marked: string): Marked {
   }
   return {
     doc,
+    // No marker means "the caret is nowhere near this", which is the end of
+    // the document rather than the start of it: offset 0 is the first position
+    // of whatever node begins the document, and the reveal rule counts that as
+    // being on the node.
     selection:
-      anchor >= 0 && head >= 0 ? EditorSelection.single(anchor, head) : EditorSelection.single(0)
+      anchor >= 0 && head >= 0
+        ? EditorSelection.single(anchor, head)
+        : EditorSelection.single(doc.length)
   }
 }
 

@@ -64,8 +64,24 @@ describe('the reveal rule (§4.2)', () => {
     expect(rendered('**test**‸')).toBe('test')
   })
 
-  it('keeps markers hidden when the caret sits just before the node', () => {
-    expect(rendered('‸**test**')).toBe('test')
+  /**
+   * The two ends are not symmetric, and deliberately so. The end is exclusive
+   * because typing the final `*` has to render the bold; the start is
+   * inclusive because that position is where you type the character that
+   * changes what the node is — a `!` before `[link](x)` makes it an image.
+   */
+  it('reveals when the caret sits at the first position of the node', () => {
+    expect(rendered('‸**test**')).toBe('**test**')
+  })
+
+  it('keeps markers hidden one position further left', () => {
+    expect(rendered('‸a**test**')).toBe('atest')
+  })
+
+  it('lets a caret reach the position that turns a link into an image', () => {
+    expect(rendered('‸[link](img.jpg)')).toBe('[link](img.jpg)')
+    // and one character earlier the link is rendered again
+    expect(rendered('‸ [link](img.jpg)')).toBe(' link')
   })
 
   it('reveals as soon as the caret steps into the trailing marker', () => {
@@ -109,13 +125,19 @@ describe('the reveal rule (§4.2)', () => {
     expect(isRevealed(spans[1]!, sel)).toBe(false)
   })
 
-  it('is strict overlap, so the boundaries do not reveal', () => {
+  it('takes a caret on the half-open range [from, to)', () => {
     const node = { from: 10, to: 20 }
-    expect(isRevealed(node, EditorSelection.single(10))).toBe(false)
-    expect(isRevealed(node, EditorSelection.single(20))).toBe(false)
+    // The start counts: it is where a prepended character lands.
+    expect(isRevealed(node, EditorSelection.single(10))).toBe(true)
     expect(isRevealed(node, EditorSelection.single(11))).toBe(true)
     expect(isRevealed(node, EditorSelection.single(19))).toBe(true)
-    // a selection that merely abuts the node does not reveal it
+    // The end does not: typing the closing marker must render the node.
+    expect(isRevealed(node, EditorSelection.single(20))).toBe(false)
+    expect(isRevealed(node, EditorSelection.single(9))).toBe(false)
+  })
+
+  it('still takes a selection on strict overlap, so abutting does not reveal', () => {
+    const node = { from: 10, to: 20 }
     expect(isRevealed(node, EditorSelection.single(0, 10))).toBe(false)
     expect(isRevealed(node, EditorSelection.single(20, 30))).toBe(false)
     // one that overlaps by a single character does

@@ -11,6 +11,7 @@ import {
   writeDocument
 } from './files.js'
 import { handleAssetRequests, registerAssetScheme } from './assets.js'
+import { resolveIconPath } from './icon.js'
 import { buildMenu } from './menu.js'
 import { DocumentWatcher } from './watcher.js'
 
@@ -49,7 +50,12 @@ function watcherFor(win: BrowserWindow): DocumentWatcher {
 }
 
 function createWindow(): BrowserWindow {
+  // Linux and Windows take the window icon from here; macOS ignores it and
+  // uses the bundle's, which electron-builder writes from the same file.
+  const icon = resolveIconPath(app.isPackaged, __dirname, process.resourcesPath)
+
   const win = new BrowserWindow({
+    ...(icon ? { icon } : {}),
     width: 1180,
     height: 780,
     minWidth: 720,
@@ -64,6 +70,10 @@ function createWindow(): BrowserWindow {
       nodeIntegration: false
     }
   })
+
+  // macOS takes the dock icon from the app bundle, which only exists once the
+  // app is packaged — in a dev run the dock would otherwise show Electron's.
+  if (process.platform === 'darwin' && !app.isPackaged && icon) app.dock?.setIcon(icon)
 
   win.once('ready-to-show', () => win.show())
 

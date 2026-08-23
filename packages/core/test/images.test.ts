@@ -15,7 +15,12 @@ afterEach(() => {
   for (const view of views.splice(0)) view.destroy()
 })
 
-function mount(doc: string, cursor = 0, images: ImageOptions | false = {}): EditorView {
+/**
+ * The caret defaults to the end of the document, not offset 0: the reveal rule
+ * counts offset 0 as being on whatever node starts the document, so a caret
+ * there would put every one of these fixtures into edit mode.
+ */
+function mount(doc: string, cursor = doc.length, images: ImageOptions | false = {}): EditorView {
   const parent = document.createElement('div')
   document.body.appendChild(parent)
   const view = new EditorView({
@@ -31,7 +36,7 @@ function mount(doc: string, cursor = 0, images: ImageOptions | false = {}): Edit
 }
 
 /** Preview mode on from the first frame, which is most of these tests. */
-const on = (doc: string, cursor = 0, extra: ImageOptions = {}): EditorView =>
+const on = (doc: string, cursor = doc.length, extra: ImageOptions = {}): EditorView =>
   mount(doc, cursor, { previewOn: true, ...extra })
 
 /**
@@ -59,13 +64,13 @@ describe('an image is alt text first, like any other link', () => {
   })
 
   it('is off unless configured, because src resolution needs the shell', () => {
-    const view = mount('![a cat](/cat.png)', 0, false)
+    const view = mount('![a cat](/cat.png)', undefined, false)
     expect(rendered(view)).toHaveLength(0)
     expect(view.contentDOM.textContent).toBe('a cat')
   })
 
   it('ignores a reference image, which has no source of its own', () => {
-    const view = on('![alt][id]\n\n[id]: /cat.png', 0)
+    const view = on('![alt][id]\n\n[id]: /cat.png')
     expect(rendered(view)).toHaveLength(0)
   })
 })
@@ -81,7 +86,7 @@ describe('preview mode', () => {
 
   it('asks the shell to resolve the source', () => {
     const seen: string[] = []
-    const view = on('![x](pics/a.png)', 0, {
+    const view = on('![x](pics/a.png)', undefined, {
       resolveSrc: (src) => {
         seen.push(src)
         return `asset://local/${src}`
@@ -110,7 +115,7 @@ describe('preview mode', () => {
   })
 
   it('reports itself unavailable when the host never configured images', () => {
-    const view = mount('![a cat](/cat.png)', 0, false)
+    const view = mount('![a cat](/cat.png)', undefined, false)
     expect(imagePreviewsInstalled(view.state)).toBe(false)
     // False, not a throw: the command returns "unhandled" and the key falls
     // through to whatever else wants it.
@@ -164,14 +169,14 @@ describe('the floating preview at the caret', () => {
   it('can be turned off on its own, leaving preview mode alone', () => {
     const view = on('![a cat](/cat.png)', 5, { lightbox: false })
     expect(lightbox(view)).toBeNull()
-    view.dispatch({ selection: EditorSelection.single(0) })
+    view.dispatch({ selection: EditorSelection.single(view.state.doc.length) })
     expect(rendered(view)).toHaveLength(1)
   })
 })
 
 describe('a source that will not load', () => {
   it('draws the broken placeholder inline when the shell declines to resolve', () => {
-    const view = on('![a picture](secret.png)', 0, { resolveSrc: () => null })
+    const view = on('![a picture](secret.png)', undefined, { resolveSrc: () => null })
     expect(rendered(view)).toHaveLength(0)
     expect(brokenInline(view)).toHaveLength(1)
     expect(view.contentDOM.textContent).toContain('a picture')
@@ -218,7 +223,7 @@ describe('a source that will not load', () => {
 
   it('regression: the same holds with preview off — alt text never blanks', () => {
     const doc = '![merman](merman.jpg)'
-    const view = mount(doc, 0)
+    const view = mount(doc)
     const j = doc.indexOf('.jpg') + 1
     view.dispatch({ changes: { from: j, to: j + 1, insert: '' } })
     expect(view.contentDOM.textContent).toBe('merman')
@@ -240,6 +245,40 @@ describe('a source that will not load', () => {
   })
 })
 
+/**
+ * The reason the reveal rule includes a node's first position. Reported as:
+ * the caret leaves edit mode the moment it reaches the `[`, so the marker
+ * collapses exactly when you are trying to prepend to it.
+ */
+describe('prepending a character that changes what the node is', () => {
+  const link = '[link](www.test.com/image.jpg)'
+
+  it('stays in edit mode with the caret at the opening bracket', () => {
+    const view = on(link, 0)
+    expect(view.contentDOM.textContent).toBe(link)
+  })
+
+  it('turns the link into a rendered image when a ! is typed there', () => {
+    const view = on(link, 0)
+    view.dispatch({ changes: { from: 0, to: 0, insert: '!' } })
+    expect(view.state.doc.toString()).toBe(`!${link}`)
+
+    // Still in edit mode — the caret is at offset 1, inside the new node.
+    expect(view.contentDOM.textContent).toBe(`!${link}`)
+
+    // And clear of it, the image renders rather than reading as a link.
+    view.dispatch({ selection: EditorSelection.single(view.state.doc.length) })
+    expect(rendered(view)[0]?.getAttribute('src')).toBe('www.test.com/image.jpg')
+  })
+
+  it('inserts before the marker, not inside it', () => {
+    const view = mount(link, 0)
+    view.dispatch({ changes: { from: 0, to: 0, insert: '!' } })
+    // The regression this guards: landing at offset 1 would give "[!link]".
+    expect(view.state.doc.toString()).toBe('![link](www.test.com/image.jpg)')
+  })
+})
+
 describe('the toggle as a command', () => {
   it('is registered with its shortcut, so menu and palette agree (I4)', () => {
     const command = defaultCommands().get('view.imagePreview')
@@ -250,8 +289,8 @@ describe('the toggle as a command', () => {
 
   it('is disabled when the editor has no images installed', () => {
     const registry = defaultCommands()
-    const off = mount('![a](/1.png)', 0, false)
-    const configured = mount('![a](/1.png)', 0)
+    const off = mount('![a](/1.png)', undefined, false)
+    const configured = mount('![a](/1.png)')
     expect(registry.enabled('view.imagePreview', { view: off, app: {} })).toBe(false)
     expect(registry.enabled('view.imagePreview', { view: configured, app: {} })).toBe(true)
   })

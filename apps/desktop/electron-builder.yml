@@ -11,6 +11,14 @@ files:
   - out/**/*
   - package.json
 
+# `build/` is buildResources: electron-builder reads it to make the installers
+# but does not put it inside the app. The window sets its own icon at runtime
+# (see `main/index.ts`), so the one file has to ship as well — from the same
+# source, rather than a second copy that can drift.
+extraResources:
+  - from: build/icon.png
+    to: icon.png
+
 # `.md` and friends open in unmark once it is installed.
 fileAssociations:
   - ext: md
