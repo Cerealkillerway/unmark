@@ -63,6 +63,25 @@ if (needsNamespaces) {
   console.log(dim('      If this system blocks user namespaces, run: pnpm sandbox:fix'))
 }
 
+/**
+ * The window icon, which on Wayland does not come from the window at all.
+ *
+ * `new BrowserWindow({ icon })` is an X11 and Windows mechanism. A Wayland
+ * compositor takes no icon from the client: GNOME matches the surface's
+ * `app_id` to a `.desktop` file and uses that file's `Icon=`. Electron derives
+ * `app_id` from the executable name, and in development the executable is
+ * `node_modules/.bin/electron` — so the window claims to be `electron`, no
+ * `electron.desktop` exists, and GNOME falls back to the generic gear.
+ *
+ * `--class` sets the name Chromium reports, so the dev window resolves to the
+ * installed `unmark.desktop` exactly like the packaged app. It needs unmark to
+ * be installed; without that there is nothing to match and the gear is
+ * correct. Harmless on X11, where it sets WM_CLASS to the same string.
+ */
+if (process.platform === 'linux' && !forwarded.some((arg) => arg.startsWith('--class'))) {
+  forwarded.push('--class=unmark')
+}
+
 const env = { ...process.env }
 /**
  * A terminal running inside another Electron process — VS Code's integrated

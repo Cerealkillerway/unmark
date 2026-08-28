@@ -1,7 +1,7 @@
 {
   "name": "unmark-desktop",
   "productName": "unmark",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "unmark \u2014 a markdown editor with no modes.",
   "license": "MIT",
   "private": true,
@@ -19,7 +19,8 @@
     "dist:mac": "electron-vite build && electron-builder --mac",
     "dist:win": "electron-vite build && electron-builder --win",
     "dev:raw": "electron-vite dev",
-    "sandbox:fix": "node scripts/fix-sandbox.mjs"
+    "sandbox:fix": "node scripts/fix-sandbox.mjs",
+    "icons": "node scripts/icons.mjs"
   },
   "dependencies": {
     "chokidar": "^4.0.3"

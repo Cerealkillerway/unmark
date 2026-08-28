@@ -58,7 +58,12 @@ nsis:
   shortcutName: unmark
 
 linux:
-  icon: build/icon.png
+  # A *directory* of sizes, not the single 1024px `icon.png`. Given one file,
+  # electron-builder installs it to `hicolor/<its own size>/apps/` — and
+  # `1024x1024` is not a directory `/usr/share/icons/hicolor/index.theme`
+  # declares, so GTK's lookup skips it and the app gets the generic gear.
+  # Regenerate from `icon.png` with `pnpm icons`.
+  icon: build/icons
   # Without this the binary keeps the package name and lands only in
   # /opt/unmark, with nothing on PATH — `unmark notes.md` from a terminal
   # would not work.
