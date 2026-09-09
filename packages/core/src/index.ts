@@ -43,6 +43,8 @@ export {
   toggleImagePreview
 } from './decorations/images.js'
 export type { ImageOptions } from './decorations/images.js'
+export { tablePreviews, tablesIn, renderedUnits, rowMotionTarget, cellInlines } from './decorations/tables.js'
+export type { Align, Inline, InlineTag, RenderRow, TableOptions } from './decorations/tables.js'
 export { isLineRevealed, isRevealed } from './decorations/reveal.js'
 export { inlineRules } from './decorations/inline.js'
 export { blockRules, linkRules } from './decorations/block.js'

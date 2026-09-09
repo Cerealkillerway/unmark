@@ -88,8 +88,60 @@ Front matter and setext underlines are the constructs that stay visible. A
 it, and a setext heading with no underline is indistinguishable from a
 paragraph.
 
-Editable inline tables are not implemented. They are their own project, not a
-corner of this one.
+### Tables
+
+A table renders a row at a time. Rows the caret is not on are drawn as a real
+table; the row the caret is on is its markdown, editable as ordinary text.
+
+That granularity is the whole trick. Every other construct folds *within* a
+line, so hiding syntax leaves the remaining characters in order and a document
+offset still maps to a place on the screen. A grid does not have that property,
+and a table rendered whole would need every caret movement and edit inside a
+cell mapped back to an offset in the source by hand. A row, though, is a line —
+so the reveal rule applies to it unchanged, and nothing ever has to map a
+position inside a rendered cell back to the markdown, because the rendered rows
+are exactly the rows nobody is editing.
+
+The header and the alignment line below it are one unit: `|:---|` has nothing
+in it to read, and revealing a header without the line that says how its
+columns align would be showing half a construct.
+
+Each row is drawn as a separate widget, which is what makes the arrow keys
+work. A block decoration is one block to CodeMirror, so a table drawn as a
+single object is stepped over in one `ArrowDown` and a click anywhere in it
+resolves to the same position — there would be no way to reach row three.
+Drawn a row at a time, vertical motion and clicks address rows. `ArrowUp` and
+`ArrowDown` are bound at `Prec.high` to enter the row they would otherwise
+skip, entering from the edge you arrived at: downwards a unit opens at its
+first line, upwards at its last, so coming up into a header lands on the
+alignment line and the next press reaches the header itself.
+
+A table is usually wider than prose wants to be. The text measure is narrow
+because prose reads better narrow; a table is the opposite, and four columns
+inside a 660px column get about 150 pixels each. `--md-table-width` sets a
+drawn table's width and the theme re-centres it over the text column.
+
+Nothing inside `.cm-content` can see how wide the editor actually is — the
+content element is capped at `--md-content-width`, so a percentage there
+resolves against the text measure and a table could only ever be a multiple of
+the column it is trying to escape. So the editor measures itself and publishes
+`--md-table-available`, its inner width as a length. A table is that width less
+`--md-table-gutter`, and never narrower than the text it sits in.
+
+**That expression has to live on the wrapper**, and it does — in `core.css`,
+not on `:root`. A custom property substitutes its own `var()`s at the element
+it is *declared* on, not where it is finally used, so the same formula written
+on `:root` or on an app's theme block looks up `--md-table-available` where it
+was never set, falls back, and silently pins every table to the prose measure.
+Set `--md-table-gutter` to tune it; `--md-table-width` overrides the whole
+calculation, and `100%` pins a table to the text column.
+
+Cell contents are built from the syntax tree, not from HTML — `**bold**`,
+`` `code` `` and `<br>` render, and every other tag stays the literal text that
+was typed. `markdownToHtml` passes raw HTML through for the clipboard, which is
+right there and wrong inside the editor, where the same string is a script
+injection and an `<img src="https://…">` that phones home on a document you
+merely opened.
 
 ### Not on the list
 
@@ -182,6 +234,10 @@ library usable outside this app.
   --md-h3-size: 1.15em;
   --md-content-width: 680px;
   --md-content-padding: 48px 32px 40vh;
+
+  /* A table uses the whole editor rather than the text measure; this is the
+     room left either side of it. */
+  --md-table-gutter: 3rem;
 }
 ```
 

@@ -96,6 +96,58 @@ for (const leaked of ['ELECTRON_RUN_AS_NODE', 'ELECTRON_NO_ATTACH_CONSOLE']) {
   }
 }
 
+/**
+ * A terminal running inside a snap-packaged editor exports that snap's own XDG
+ * paths — VS Code's does. `XDG_DATA_HOME`, `XDG_DATA_DIRS` and
+ * `GSETTINGS_SCHEMA_DIR` then all resolve to the GSettings schemas shipped
+ * inside the snap, which lag the host's: their `org.gnome.desktop.interface`
+ * has no `color-scheme` and no `font-antialiasing`.
+ *
+ * Chromium's GTK layer reads those keys while it brings up a Wayland window,
+ * gets nothing back, and dereferences it anyway. The main process dies of
+ * SIGSEGV before the window is shown, and because electron-vite reports the
+ * signal rather than propagating it, `pnpm dev` looks like it simply decided to
+ * stop: no window, no error, exit code 0.
+ *
+ * Point the child at the host's schemas instead. Nothing else the snap exports
+ * matters to Electron, so leave the rest of it alone.
+ */
+const snapPaths = [
+  env['SNAP'],
+  env['SNAP_USER_DATA'],
+  env['SNAP_USER_COMMON'],
+  env['SNAP_DATA'],
+  env['SNAP_COMMON']
+].filter(Boolean)
+
+const insideSnap = (path) =>
+  snapPaths.some((snap) => path === snap || path.startsWith(`${snap}/`))
+
+if (snapPaths.length > 0) {
+  let redirected = false
+
+  for (const variable of ['GSETTINGS_SCHEMA_DIR', 'XDG_DATA_HOME']) {
+    if (env[variable] && insideSnap(env[variable])) {
+      // Unset, not corrected: GLib's own defaults are the host's paths.
+      delete env[variable]
+      redirected = true
+    }
+  }
+
+  const dataDirs = env['XDG_DATA_DIRS']?.split(':').filter(Boolean) ?? []
+  const hostDirs = dataDirs.filter((dir) => !insideSnap(dir))
+  if (hostDirs.length < dataDirs.length) {
+    env['XDG_DATA_DIRS'] = hostDirs.join(':') || '/usr/local/share:/usr/share'
+    redirected = true
+  }
+
+  if (redirected) {
+    console.log(
+      dim("[dev] dropped the snap terminal's XDG paths; Electron needs the host's schemas.")
+    )
+  }
+}
+
 const args = ['dev']
 if (forwarded.length > 0) args.push('--', ...forwarded)
 

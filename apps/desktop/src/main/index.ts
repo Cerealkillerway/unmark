@@ -133,6 +133,22 @@ app.on('open-file', (event, path) => {
 })
 
 /**
+ * Development gets its own userData directory.
+ *
+ * Electron derives that directory from the product name alone, so a dev run and
+ * an installed unmark share `~/.config/unmark` — including the file the lock
+ * below is taken on. With the packaged app running, `pnpm dev` therefore loses
+ * that lock and quits: no window, no message, exit code 0, while the installed
+ * app pops to the front holding the dev run's argv. Two builds of the same
+ * program have no business sharing a profile anyway.
+ *
+ * Must happen before the lock is requested, and before the app is ready.
+ */
+if (!app.isPackaged) {
+  app.setPath('userData', join(app.getPath('appData'), `${app.getName()}-dev`))
+}
+
+/**
  * One instance owns the window. A second `unmark notes.md` should open a tab
  * in the window you already have, not a second copy of the editor with its own
  * idea of which files are dirty.

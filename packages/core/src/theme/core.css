@@ -46,6 +46,8 @@
   --md-color-link: var(--md-color-accent);
   --md-color-link-underline: oklch(0.86 0.04 255);
   --md-color-rule: var(--md-color-border);
+  --md-color-table-border: var(--md-color-border);
+  --md-color-table-header-bg: var(--md-color-code-bg);
 
   /* Heading scale */
   --md-h1-size: 1.75em;
@@ -60,6 +62,15 @@
 
   /* Measure */
   --md-content-width: 660px;
+  /* A drawn table uses the whole editor, not the prose measure: prose reads
+     better narrow and a table does not. `--md-table-gutter` is how much room
+     is left either side of it.
+
+     `--md-table-width` overrides that outright — `100%` pins a table to the
+     text column — but it has to be set somewhere that inherits the editor's
+     measured `--md-table-available`, which in practice means leaving the
+     automatic value alone and moving the gutter instead. */
+  --md-table-gutter: 3rem;
   --md-content-padding: 46px 32px 40vh;
   --md-gutter-width: 44px;
 }

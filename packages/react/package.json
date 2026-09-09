@@ -1,6 +1,6 @@
 {
   "name": "@md/react",
-  "version": "2.0.2",
+  "version": "2.0.7",
   "description": "React wrapper for @md/core.",
   "license": "MIT",
   "type": "module",

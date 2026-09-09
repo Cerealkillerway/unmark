@@ -23,6 +23,7 @@ import type { AppBridge } from './commands/types.js'
 import { lineSeparatorFor, serializeDocument } from './document.js'
 import { markdownLinks, type LinkOptions } from './links.js'
 import { imagePreviews, type ImageOptions } from './decorations/images.js'
+import { tablePreviews, type TableOptions } from './decorations/tables.js'
 import { markdownDecorations } from './decorations/plugin.js'
 import { blockRules, linkRules } from './decorations/block.js'
 import { inlineRules } from './decorations/inline.js'
@@ -56,6 +57,12 @@ export interface MarkdownSetupOptions extends MarkdownLanguageOptions {
    * know where the document lives, which only the shell can say.
    */
   images?: ImageOptions | false
+  /**
+   * Render tables a row at a time, under the reveal rule. On by default: it
+   * needs nothing from the shell, unlike images, whose `src` only the shell
+   * can resolve. `false` leaves a table as the styled monospace source it was.
+   */
+  tables?: TableOptions | false
 }
 
 /** Every rule the decoration plugin knows about. */
@@ -88,6 +95,7 @@ export function markdownSetup(options: MarkdownSetupOptions = {}): Extension[] {
     clipboard = {},
     links = {},
     images = false,
+    tables = {},
     ...language
   } = options
 
@@ -97,6 +105,7 @@ export function markdownSetup(options: MarkdownSetupOptions = {}): Extension[] {
     ...(clipboard === false ? [] : [markdownClipboard(clipboard)]),
     ...(links === false ? [] : [markdownLinks(links)]),
     ...(images === false ? [] : [imagePreviews(images)]),
+    ...(tables === false ? [] : [tablePreviews(tables)]),
 
     history(),
     drawSelection(),

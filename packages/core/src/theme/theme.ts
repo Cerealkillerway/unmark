@@ -122,13 +122,63 @@ export const markdownTheme = EditorView.theme({
   '.cm-md-fence': { color: 'var(--md-color-marker)' },
   '.cm-md-code-info': { color: 'var(--md-color-accent-soft)' },
 
-  /* Tables — out of scope for v1 (§4.2): styled monospace, nothing hidden. */
+  /* Tables. A revealed row — the one the caret is on — is its markdown, in
+     monospace so the pipes line up with the row above and below it. */
   '.cm-md-line-table': {
     fontFamily: 'var(--md-font-mono)',
     fontSize: 'var(--md-mono-size)'
   },
   '.cm-md-table-delim': { color: 'var(--md-color-marker)' },
   '.cm-md-table-header': { fontWeight: '600', color: 'var(--md-color-strong)' },
+
+  /* ...and every row that is not being edited is drawn.
+
+     Each row is its own widget, so that vertical motion and clicks address a
+     row rather than the whole table. `--md-table-width` is how a table escapes
+     the prose measure: it is a width for the wrapper, and the matching negative
+     margins re-centre it over the text column. */
+  '.cm-md-table-wrap': {
+    overflowX: 'auto',
+    /* Resolved *here*, on the element that inherits `--md-table-available`.
+       A custom property substitutes its own `var()`s at the element it is
+       declared on, so the same expression written on `:root` — or on an app's
+       theme block — would look the measured width up where it does not exist
+       and silently fall back to the prose measure every time. */
+    '--md-table-w':
+      'var(--md-table-width, max(100%, calc(var(--md-table-available, 100%) - var(--md-table-gutter, 3rem))))',
+    width: 'var(--md-table-w)',
+    marginInline: 'calc((100% - var(--md-table-w)) / 2)'
+  },
+  '.cm-md-table': {
+    width: '100%',
+    borderCollapse: 'collapse',
+    /* The widths the widget sets on <col> only bind under fixed layout, and
+       they are what makes separately drawn rows line up as one table. */
+    tableLayout: 'fixed'
+  },
+  '.cm-md-table th, .cm-md-table td': {
+    border: '1px solid var(--md-color-table-border)',
+    /* Adjacent rows are separate <table> elements, so a top border on each
+       would draw every interior rule twice. Only the row that starts a run
+       carries one — see `top` in tables.ts. */
+    borderTopWidth: '0',
+    padding: '0.35em 0.6em',
+    verticalAlign: 'top',
+    textAlign: 'left',
+    /* A long unbroken cell must not widen the column it was apportioned. */
+    overflowWrap: 'anywhere'
+  },
+  '.cm-md-table-top th, .cm-md-table-top td': { borderTopWidth: '1px' },
+  '.cm-md-table th': {
+    fontWeight: '600',
+    color: 'var(--md-color-strong)',
+    backgroundColor: 'var(--md-color-table-header-bg)'
+  },
+  '.cm-md-table-code': {
+    fontFamily: 'var(--md-font-mono)',
+    fontSize: 'var(--md-mono-size)',
+    color: 'var(--md-color-code)'
+  },
 
   /* Links. */
   '.cm-md-link': { color: 'var(--md-color-link)' },

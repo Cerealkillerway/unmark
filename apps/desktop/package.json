@@ -1,7 +1,7 @@
 {
   "name": "unmark-desktop",
   "productName": "unmark",
-  "version": "2.0.2",
+  "version": "2.0.7",
   "description": "unmark \u2014 a markdown editor with no modes.",
   "license": "MIT",
   "private": true,
