@@ -266,6 +266,204 @@ export const markdownTheme = EditorView.theme({
     whiteSpace: 'normal'
   },
 
+  /* Find.
+
+     The panel is ours — supplied through `search`'s `createPanel` — so these
+     are this package's own classes rather than @codemirror/search's internals,
+     and nothing here depends on the markup of a package we do not control.
+
+     The controls are shaped after shadcn's: a 32px row, a shared radius, a
+     one-pixel border, and a three-pixel focus ring in the accent colour
+     instead of the browser outline. */
+  '.cm-panels': {
+    backgroundColor: 'var(--md-color-bg)',
+    color: 'var(--md-color-text)',
+    fontFamily: 'var(--md-font-body)'
+  },
+  '.cm-panels-top': { borderBottom: '1px solid var(--md-color-border)' },
+  '.cm-panels-bottom': { borderTop: '1px solid var(--md-color-border)' },
+
+  '.cm-md-find': {
+    position: 'relative',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+    /* Room on the right for the close button, which is out of flow so it sits
+       in the corner rather than trailing whichever row happens to be last. */
+    padding: '10px 46px 10px 12px'
+  },
+  '.cm-md-find-row': {
+    display: 'flex',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: '6px'
+  },
+
+  /* The field and its counter share one bordered box, so the count reads as
+     part of the input the way it does in a browser's own find bar. */
+  '.cm-md-find-box': {
+    display: 'flex',
+    alignItems: 'center',
+    flex: '1 1 220px',
+    minWidth: '160px',
+    height: '32px',
+    padding: '0 4px 0 10px',
+    border: '1px solid var(--md-color-field-border)',
+    borderRadius: 'var(--md-radius)',
+    backgroundColor: 'var(--md-color-field-bg)'
+  },
+  '.cm-md-find-box:focus-within': {
+    borderColor: 'var(--md-color-accent)',
+    boxShadow: '0 0 0 3px var(--md-color-ring)'
+  },
+  '.cm-md-find-box .cm-md-find-input': {
+    flex: '1 1 auto',
+    minWidth: '0',
+    height: 'auto',
+    padding: '0',
+    border: '0',
+    backgroundColor: 'transparent',
+    boxShadow: 'none'
+  },
+  '.cm-md-find-count': {
+    flex: '0 0 auto',
+    padding: '0 6px',
+    color: 'var(--md-color-muted)',
+    fontFamily: 'var(--md-font-mono)',
+    fontSize: 'calc(var(--md-panel-font-size) * 0.92)',
+    fontVariantNumeric: 'tabular-nums',
+    whiteSpace: 'nowrap'
+  },
+
+  '.cm-md-find-input': {
+    flex: '1 1 200px',
+    minWidth: '160px',
+    height: '32px',
+    margin: '0',
+    padding: '0 10px',
+    border: '1px solid var(--md-color-field-border)',
+    borderRadius: 'var(--md-radius)',
+    backgroundColor: 'var(--md-color-field-bg)',
+    color: 'var(--md-color-text)',
+    fontFamily: 'var(--md-font-mono)',
+    fontSize: 'var(--md-panel-font-size)'
+  },
+  '.cm-md-find-input::placeholder': { color: 'var(--md-color-muted)' },
+  '.cm-md-find-input:focus': {
+    outline: 'none',
+    borderColor: 'var(--md-color-accent)',
+    boxShadow: '0 0 0 3px var(--md-color-ring)'
+  },
+  /* Already ringed by its box. */
+  '.cm-md-find-box .cm-md-find-input:focus': { borderColor: 'transparent', boxShadow: 'none' },
+
+  '.cm-md-find-button': {
+    display: 'inline-flex',
+    alignItems: 'center',
+    height: '32px',
+    margin: '0',
+    padding: '0 12px',
+    border: '1px solid var(--md-color-field-border)',
+    borderRadius: 'var(--md-radius)',
+    backgroundColor: 'var(--md-color-field-bg)',
+    backgroundImage: 'none',
+    color: 'var(--md-color-text)',
+    fontFamily: 'var(--md-font-body)',
+    fontSize: 'var(--md-panel-font-size)',
+    fontWeight: '500',
+    whiteSpace: 'nowrap',
+    cursor: 'pointer'
+  },
+  '.cm-md-find-button:hover': { backgroundColor: 'var(--md-color-control-hover)' },
+  '.cm-md-find-button:focus-visible': {
+    outline: 'none',
+    borderColor: 'var(--md-color-accent)',
+    boxShadow: '0 0 0 3px var(--md-color-ring)'
+  },
+  /* One filled button, on the action the panel exists for. */
+  '.cm-md-find-primary': {
+    backgroundColor: 'var(--md-color-accent)',
+    borderColor: 'var(--md-color-accent)',
+    color: 'var(--md-color-on-accent)'
+  },
+  '.cm-md-find-primary:hover': { backgroundColor: 'var(--md-color-accent-hover)' },
+
+  '.cm-md-find-toggle': {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    margin: '0',
+    color: 'var(--md-color-muted)',
+    fontFamily: 'var(--md-font-body)',
+    fontSize: 'var(--md-panel-font-size)',
+    whiteSpace: 'nowrap',
+    cursor: 'pointer',
+    userSelect: 'none'
+  },
+  '.cm-md-find-check': {
+    appearance: 'none',
+    width: '15px',
+    height: '15px',
+    margin: '0',
+    display: 'inline-grid',
+    placeContent: 'center',
+    border: '1px solid var(--md-color-field-border)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--md-color-field-bg)',
+    cursor: 'pointer'
+  },
+  '.cm-md-find-check:checked': {
+    backgroundColor: 'var(--md-color-accent)',
+    borderColor: 'var(--md-color-accent)'
+  },
+  /* The tick is two borders on an empty box, turned 45°, so it takes its
+     colour from the contract rather than arriving as an embedded image with a
+     hard-coded fill. */
+  '.cm-md-find-check:checked::after': {
+    content: '""',
+    width: '4px',
+    height: '8px',
+    marginTop: '-2px',
+    borderStyle: 'solid',
+    borderColor: 'var(--md-color-on-accent)',
+    borderWidth: '0 2px 2px 0',
+    transform: 'rotate(45deg)'
+  },
+  '.cm-md-find-check:focus-visible': {
+    outline: 'none',
+    borderColor: 'var(--md-color-accent)',
+    boxShadow: '0 0 0 3px var(--md-color-ring)'
+  },
+
+  '.cm-md-find-close': {
+    position: 'absolute',
+    top: '10px',
+    right: '10px',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '26px',
+    height: '26px',
+    padding: '0',
+    border: '0',
+    borderRadius: 'var(--md-radius)',
+    backgroundColor: 'transparent',
+    color: 'var(--md-color-muted)',
+    fontFamily: 'var(--md-font-body)',
+    fontSize: 'calc(var(--md-panel-font-size) * 1.4)',
+    cursor: 'pointer'
+  },
+  '.cm-md-find-close:hover': {
+    backgroundColor: 'var(--md-color-control-hover)',
+    color: 'var(--md-color-text)'
+  },
+
+  /* Every occurrence is marked; the one the caret is on more strongly. A
+     match inside a drawn table row is invisible until the selection lands on
+     it, at which point the reveal rule turns that row back into markdown. */
+  '.cm-searchMatch': { backgroundColor: 'var(--md-color-search-match)' },
+  '.cm-searchMatch-selected': { backgroundColor: 'var(--md-color-search-match-active)' },
+
   /* Holding Mod turns links into something you can click. */
   '&.cm-md-mod .cm-md-link': {
     cursor: 'pointer',

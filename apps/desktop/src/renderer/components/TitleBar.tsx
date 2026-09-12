@@ -23,6 +23,11 @@ export function TitleBar({ folder, theme, onTheme }: TitleBarProps): React.React
         <span className="wordmark">
           <span className="wordmark-un">un</span>mark
         </span>
+        {/* Baked in at build time from package.json, which version-updater
+            owns — the same number the installer reports. */}
+        <span className="version" title={`unmark ${__APP_VERSION__}`}>
+          {__APP_VERSION__}
+        </span>
       </div>
       {folder ? <span className="folder-path">{folder}</span> : null}
       <div className="theme-switch" role="group" aria-label="Theme">

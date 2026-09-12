@@ -45,6 +45,15 @@ export {
 export type { ImageOptions } from './decorations/images.js'
 export { tablePreviews, tablesIn, renderedUnits, rowMotionTarget, cellInlines } from './decorations/tables.js'
 export type { Align, Inline, InlineTag, RenderRow, TableOptions } from './decorations/tables.js'
+export {
+  markdownSearch,
+  searchCommands,
+  searchInstalledIn,
+  findPanelOpen,
+  matchTally,
+  tallyLabel
+} from './search.js'
+export type { MatchTally, SearchOptions } from './search.js'
 export { isLineRevealed, isRevealed } from './decorations/reveal.js'
 export { inlineRules } from './decorations/inline.js'
 export { blockRules, linkRules } from './decorations/block.js'

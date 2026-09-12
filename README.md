@@ -143,6 +143,40 @@ right there and wrong inside the editor, where the same string is a script
 injection and an `<img src="https://…">` that phones home on a document you
 merely opened.
 
+### Find
+
+`Mod-f` opens a find bar; `Mod-g` and `Mod-Shift-g` step through the matches,
+`Escape` closes it. Every occurrence is highlighted while the panel is open.
+
+The bar counts as you type — `2/7`, or `No results` — so you can see how many
+occurrences there are and which one you are on without stepping through them.
+The tally comes from `SearchQuery.getCursor`, the same cursor the search
+commands step through, so case sensitivity, whole-word and regexp are all
+honoured without a second implementation of the matching rules. Counting scans
+the document, so it stops at `countLimit` (500) and says `500+` past that.
+
+The panel is this package's own, supplied through `search`'s `createPanel`
+option — which is what lets the count sit inside the field, and what keeps the
+styling on classes we own rather than on another package's internals. Its
+controls are restyled from CodeMirror's defaults — a shared radius, a
+32px row, a three-pixel focus ring in the accent colour, one filled button on
+the action the panel exists for — and every colour derives from a token already
+in the contract, so the panel follows an app's theme without it naming a single
+one. The tick inside a checked box is two borders turned 45°, for the same
+reason: an embedded image would carry a hard-coded fill that no theme reaches.
+
+The matching is `@codemirror/search`, which this library already listed as a
+peer dependency. What is deliberate here is that the keys come from the command
+registry rather than from that package's own `searchKeymap`: I4 exists because
+a shortcut declared only in a keymap drifts from the menu that claims to show
+it, so find is a `CommandDef` like every other action and the menu bar, the
+palette and the keyboard stay one list.
+
+Matches inside a rendered table work without a special case. Selecting one puts
+the selection inside a drawn row, and the reveal rule turns that row back into
+markdown in the same transaction — so by the time the match is scrolled to, it
+is text again.
+
 ### Not on the list
 
 No vault, graph view, backlinks or wiki-links. No plugin ecosystem. No cloud
@@ -222,6 +256,15 @@ library usable outside this app.
 
   /* The characters that fold away */
   --md-color-marker: #ccc2b4;
+
+  /* The find bar's fields and buttons. Each one defaults to something derived
+     from the colours above, so a theme that sets none of them still gets a
+     matching panel. */
+  --md-radius: 6px;
+  --md-color-field-bg: #fffdf7;
+  --md-color-field-border: #e8e0d4;
+  --md-color-ring: color-mix(in oklab, var(--md-color-accent) 35%, transparent);
+  --md-panel-font-size: 0.85rem;
 
   /* Blocks */
   --md-color-heading: #1a1613;

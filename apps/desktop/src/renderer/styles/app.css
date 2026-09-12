@@ -145,6 +145,18 @@ button {
   color: var(--text-3);
 }
 
+/* Sits beside the wordmark: present, but never competing with it. */
+.version {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  padding: 1px 5px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
 .folder-path {
   color: var(--text-3);
   font-family: var(--font-mono);

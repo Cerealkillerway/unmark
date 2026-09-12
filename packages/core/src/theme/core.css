@@ -48,6 +48,24 @@
   --md-color-rule: var(--md-color-border);
   --md-color-table-border: var(--md-color-border);
   --md-color-table-header-bg: var(--md-color-code-bg);
+  --md-color-search-match: color-mix(in oklab, var(--md-color-accent) 24%, transparent);
+  --md-color-search-match-active: color-mix(in oklab, var(--md-color-accent) 52%, transparent);
+
+  /* Form controls: the find bar's fields, buttons and checkboxes.
+
+     Every one of these derives from a colour already in the contract, so an
+     app that maps `--md-color-accent` and `--md-color-bg` gets a matching find
+     bar without naming any of them. `--md-color-on-accent` is the background
+     colour on purpose: the accent is dark against a light page and light
+     against a dark one, so the page's own background is exactly the ink that
+     stays readable on top of it in both themes. */
+  --md-radius: 6px;
+  --md-color-field-bg: var(--md-color-bg);
+  --md-color-field-border: var(--md-color-border);
+  --md-color-on-accent: var(--md-color-bg);
+  --md-color-accent-hover: color-mix(in oklab, var(--md-color-accent) 88%, var(--md-color-text));
+  --md-color-control-hover: color-mix(in oklab, var(--md-color-text) 8%, transparent);
+  --md-color-ring: color-mix(in oklab, var(--md-color-accent) 35%, transparent);
 
   /* Heading scale */
   --md-h1-size: 1.75em;
@@ -61,6 +79,11 @@
   --md-heading-line-height: 1.22;
 
   /* Measure */
+  /* The find panel's controls. Its own size, because a form the width of the
+     window reads badly at prose size — but on the contract, because §4.7's
+     promise is that everything the editor shows is themeable from here. */
+  --md-panel-font-size: 0.85rem;
+
   --md-content-width: 660px;
   /* A drawn table uses the whole editor, not the prose measure: prose reads
      better narrow and a table does not. `--md-table-gutter` is how much room

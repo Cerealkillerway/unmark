@@ -22,6 +22,7 @@ import { CommandRegistry } from './commands/registry.js'
 import type { AppBridge } from './commands/types.js'
 import { lineSeparatorFor, serializeDocument } from './document.js'
 import { markdownLinks, type LinkOptions } from './links.js'
+import { markdownSearch, searchCommands, type SearchOptions } from './search.js'
 import { imagePreviews, type ImageOptions } from './decorations/images.js'
 import { tablePreviews, type TableOptions } from './decorations/tables.js'
 import { markdownDecorations } from './decorations/plugin.js'
@@ -63,6 +64,12 @@ export interface MarkdownSetupOptions extends MarkdownLanguageOptions {
    * can resolve. `false` leaves a table as the styled monospace source it was.
    */
   tables?: TableOptions | false
+  /**
+   * Find, with a panel and match highlighting. On by default: it needs nothing
+   * from the shell. `false` drops the extension, and the find commands report
+   * themselves disabled rather than disappearing.
+   */
+  search?: SearchOptions | false
 }
 
 /** Every rule the decoration plugin knows about. */
@@ -77,7 +84,7 @@ export function defaultRules(): RuleTable {
  * singleton would make two editors on one page fight over it.
  */
 export function defaultCommands(): CommandRegistry {
-  return new CommandRegistry([...formatCommands, ...viewCommands])
+  return new CommandRegistry([...formatCommands, ...viewCommands, ...searchCommands])
 }
 
 /**
@@ -96,6 +103,7 @@ export function markdownSetup(options: MarkdownSetupOptions = {}): Extension[] {
     links = {},
     images = false,
     tables = {},
+    search = {},
     ...language
   } = options
 
@@ -106,6 +114,7 @@ export function markdownSetup(options: MarkdownSetupOptions = {}): Extension[] {
     ...(links === false ? [] : [markdownLinks(links)]),
     ...(images === false ? [] : [imagePreviews(images)]),
     ...(tables === false ? [] : [tablePreviews(tables)]),
+    ...(search === false ? [] : [markdownSearch(search)]),
 
     history(),
     drawSelection(),

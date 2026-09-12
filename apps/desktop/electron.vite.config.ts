@@ -1,8 +1,21 @@
+import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import react from '@vitejs/plugin-react'
 
 const root = import.meta.dirname
+
+/**
+ * The version the title bar shows, baked in at build time.
+ *
+ * Read from this package's own `package.json`, which `version-updater` owns —
+ * so the number beside the wordmark is the same one the installer, the `.deb`
+ * and `app.getVersion()` report, and there is no way for it to drift. Going
+ * through IPC instead would mean the same constant arriving a frame late.
+ */
+const version = JSON.parse(
+  readFileSync(resolve(root, 'package.json'), 'utf8')
+) as { version: string }
 
 /**
  * main + preload are emitted as CommonJS (.cjs):
@@ -32,6 +45,7 @@ export default defineConfig({
   renderer: {
     root: resolve(root, 'src/renderer'),
     plugins: [react()],
+    define: { __APP_VERSION__: JSON.stringify(version.version) },
     resolve: {
       alias: { '@shared': resolve(root, 'src/shared') },
       // Trap #1: exactly one copy of every CodeMirror package.
@@ -40,6 +54,7 @@ export default defineConfig({
         '@codemirror/view',
         '@codemirror/language',
         '@codemirror/commands',
+        '@codemirror/search',
         '@lezer/common',
         '@lezer/highlight'
       ]
