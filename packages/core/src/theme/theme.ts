@@ -17,7 +17,15 @@ export const markdownTheme = EditorView.theme({
   '.cm-scroller': {
     fontFamily: 'var(--md-font-body)',
     lineHeight: 'var(--md-line-height)',
-    overflowY: 'auto'
+    overflowY: 'auto',
+    // Restated here rather than left to inherit from the page. Both
+    // properties are inherited, so a document that declares them once gets
+    // them everywhere — but an app that themes a single editor from a wrapper
+    // (which §4.7 promises it can) sets the palette on that wrapper, and the
+    // scroller has to resolve its scrollbar against the same block as its
+    // background, not against whatever `:root` happens to say.
+    scrollbarWidth: 'var(--md-scrollbar-width)',
+    scrollbarColor: 'var(--md-color-scrollbar-thumb) var(--md-color-scrollbar-track)'
   },
   '.cm-content': {
     padding: 'var(--md-content-padding)',

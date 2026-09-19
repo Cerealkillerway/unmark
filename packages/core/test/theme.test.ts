@@ -53,6 +53,38 @@ describe('the theming contract (§4.7)', () => {
     expect(CONTRACT).toContain(":root:not([data-theme='light'])")
     expect(CONTRACT).toContain(":root[data-theme='dark']")
   })
+
+  /**
+   * Scrollbars are painted by the UA, not by us, and the UA reads
+   * `color-scheme` to decide which way round. A palette that flips the
+   * colours without flipping the scheme leaves light scrollbars on a dark
+   * document — so the scheme belongs to every palette block, not just one.
+   */
+  it('declares a colour scheme with every palette', () => {
+    const palettes = [
+      /^:root \{[\s\S]*?^\}/m,
+      /^@media \(prefers-color-scheme: dark\) \{[\s\S]*?^\}/m,
+      /^:root\[data-theme='dark'\] \{[\s\S]*?^\}/m
+    ].map((pattern) => pattern.exec(CONTRACT)?.[0])
+
+    expect(palettes.every(Boolean), 'a palette block went missing').toBe(true)
+    expect(palettes[0]).toContain('color-scheme: light;')
+    expect(palettes[1]).toContain('color-scheme: dark;')
+    expect(palettes[2]).toContain('color-scheme: dark;')
+  })
+
+  it('puts the scrollbar on the contract, derived so dark needs no restatement', () => {
+    for (const name of [
+      '--md-scrollbar-width',
+      '--md-color-scrollbar-thumb',
+      '--md-color-scrollbar-track'
+    ]) {
+      expect(CONTRACT, name).toContain(`${name}:`)
+    }
+    // Derived from the ink, which each palette already sets — a literal here
+    // would be a fourth place the dark theme has to remember to change.
+    expect(CONTRACT).toMatch(/--md-color-scrollbar-thumb:[^;]*var\(--md-color-text\)/)
+  })
 })
 
 /**
@@ -81,6 +113,16 @@ describe('the CM6 theme paints only with contract variables', () => {
     // A literal `400` is "not bold", a structural reset. The weight headings
     // are actually drawn at has to come from the contract.
     expect(THEME).toContain('var(--md-heading-weight)')
+  })
+
+  it('paints the editor scrollbar from the contract too', () => {
+    // The scroller restates the inherited properties so an editor themed on a
+    // wrapper resolves its scrollbar against that wrapper, not against :root.
+    const block = /'\.cm-scroller': \{([\s\S]*?)\},/.exec(THEME)?.[1]
+    expect(block, 'no .cm-scroller block found').toBeDefined()
+    expect(block).toContain('var(--md-scrollbar-width)')
+    expect(block).toContain('var(--md-color-scrollbar-thumb)')
+    expect(block).toContain('var(--md-color-scrollbar-track)')
   })
 
   it('takes every highlight colour from a variable', () => {

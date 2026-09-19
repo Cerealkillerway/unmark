@@ -33,6 +33,24 @@
   --md-color-selection: oklch(0.92 0.04 255);
   --md-color-cursor: var(--md-color-accent);
 
+  /* Scrollbars, and everything else the browser paints for itself.
+
+     `color-scheme` is the declaration that actually matters. A scrollbar the
+     page has not styled is drawn by the UA, which has no way to learn that
+     the palette below went dark — so it keeps drawing the light one against
+     a dark document. It governs the native form controls and the canvas
+     outside our own backgrounds too, which is why it sits with the palette
+     rather than with the scrollbar colours.
+
+     `scrollbar-color` then takes it from "the platform's dark scrollbar" to
+     "this palette's scrollbar". Both values derive from `--md-color-text`, so
+     they follow the theme without being restated in the dark blocks below —
+     ink at low alpha reads correctly over either background. */
+  color-scheme: light;
+  --md-scrollbar-width: thin;
+  --md-color-scrollbar-thumb: color-mix(in oklab, var(--md-color-text) 22%, transparent);
+  --md-color-scrollbar-track: transparent;
+
   /* Syntax markers — the characters that fold away */
   --md-color-marker: #c4cad2;
 
@@ -118,6 +136,7 @@
     --md-color-code-bg: #1d232a;
     --md-color-code-border: #2a313a;
     --md-color-link-underline: oklch(0.45 0.08 255);
+    color-scheme: dark;
   }
 }
 
@@ -135,4 +154,5 @@
   --md-color-code-bg: #1d232a;
   --md-color-code-border: #2a313a;
   --md-color-link-underline: oklch(0.45 0.08 255);
+  color-scheme: dark;
 }

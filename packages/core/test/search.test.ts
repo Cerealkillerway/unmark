@@ -226,6 +226,25 @@ describe('the panel DOM', () => {
     expect(counter.textContent).toBe('2/2')
   })
 
+  it('focuses the find field as soon as the panel opens', () => {
+    view = mount('one two one')
+    run('edit.find', view)
+
+    const field = view.dom.querySelector('.cm-md-find-input') as HTMLInputElement
+    expect(document.activeElement).toBe(field)
+  })
+
+  it('selects the seeded query so typing replaces it', () => {
+    view = mount('one two one')
+    view.dispatch({ selection: EditorSelection.single(0, 3) })
+    run('edit.find', view)
+
+    const field = view.dom.querySelector('.cm-md-find-input') as HTMLInputElement
+    expect(field.value).toBe('one')
+    expect(field.selectionStart).toBe(0)
+    expect(field.selectionEnd).toBe(3)
+  })
+
   it('drops the replace row in a read-only editor', () => {
     const parent = document.createElement('div')
     document.body.appendChild(parent)

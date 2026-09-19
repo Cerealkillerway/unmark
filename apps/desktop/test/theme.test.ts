@@ -40,6 +40,13 @@ describe('the app themes the editor through variables alone', () => {
     }
   })
 
+  it('maps the scrollbar through the contract as well', () => {
+    const block = /\.app \{\s*(--md-[\s\S]*?)\}/.exec(RULES)?.[1] ?? ''
+    expect(block).toContain('--md-color-scrollbar-thumb:')
+    expect(block).toContain('--md-color-scrollbar-track:')
+    expect(block).toContain('--md-scrollbar-width:')
+  })
+
   it('drives light and dark from the same variables with different values', () => {
     expect(RULES).toMatch(/:root\[data-theme='light'\]/)
     expect(RULES).toMatch(/:root\[data-theme='dark'\]/)
@@ -51,5 +58,36 @@ describe('the app themes the editor through variables alone', () => {
     for (const value of values) {
       expect(value, value).toMatch(/var\(--|color-mix\(/)
     }
+  })
+})
+
+/**
+ * The chrome scrolls in five places — sidebar, outline, palette list, editor
+ * slot, the caret readout — and none of them was styling its scrollbar, so the
+ * UA drew its light one straight through the dark theme. Both properties
+ * inherit, which is what makes one declaration on the root the whole fix.
+ */
+describe('the shell themes its own scrollbars', () => {
+  it('declares a colour scheme with each palette', () => {
+    const dark = /^:root,\n:root\[data-theme='dark'\] \{[\s\S]*?^\}/m.exec(RULES)?.[0]
+    const light = /^:root\[data-theme='light'\] \{[\s\S]*?^\}/m.exec(RULES)?.[0]
+    expect(dark, 'no dark palette block found').toBeDefined()
+    expect(light, 'no light palette block found').toBeDefined()
+    expect(dark).toContain('color-scheme: dark;')
+    expect(light).toContain('color-scheme: light;')
+  })
+
+  it('sets the scrollbar once on the root, where it inherits from', () => {
+    const root = /^:root \{[\s\S]*?^\}/m.exec(RULES)?.[0] ?? ''
+    expect(root).toContain(
+      'scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);'
+    )
+    expect(root).toContain('scrollbar-width: var(--scrollbar-width);')
+    // Derived from the ink each palette already sets, not restated per theme.
+    expect(root).toMatch(/--scrollbar-thumb:[^;]*var\(--text\)/)
+  })
+
+  it('leaves the tab strip opt-out intact', () => {
+    expect(RULES).toMatch(/\.tabs \{[\s\S]*?scrollbar-width: none;/)
   })
 })

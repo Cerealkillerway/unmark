@@ -294,6 +294,20 @@ class FindPanel implements Panel {
     }
   }
 
+  /**
+   * Focus the find field the moment the panel appears.
+   *
+   * `openSearchPanel` only focuses `[main-field]` when the panel is *already*
+   * showing; the first open is a plain `togglePanel` and leaves the caret in
+   * the document, so a panel that wants focus has to take it here. Selecting
+   * as well as focusing is what makes the seeded query — CodeMirror puts the
+   * current selection in the field — replaceable by simply typing.
+   */
+  mount(): void {
+    this.searchField.focus()
+    this.searchField.select()
+  }
+
   private render(): void {
     this.counter.textContent = tallyLabel(
       this.query,
