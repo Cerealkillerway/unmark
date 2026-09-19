@@ -1,7 +1,3 @@
-<div align="center">
-
-<img src="docs/logo.svg" width="72" height="72" alt="">
-
 # unmark
 
 **A markdown editor with no modes.**
