@@ -493,6 +493,25 @@ button {
   color: var(--accent-soft);
 }
 
+/* The folders give way first; the file name is what has to stay readable. */
+.status-path {
+  display: flex;
+  min-width: 0;
+  flex: 0 1 auto;
+  font-family: var(--font-mono);
+}
+
+.status-path-dir {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status-path-name {
+  flex: none;
+  color: var(--text-2);
+}
+
 .status-spacer {
   margin-left: auto;
 }
