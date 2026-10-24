@@ -1,7 +1,7 @@
 import { syntaxTree } from '@codemirror/language'
 import type { EditorState } from '@codemirror/state'
 import type { SyntaxNode, SyntaxNodeRef } from '@lezer/common'
-import { isRevealed } from './reveal.js'
+import { isLineRevealed, isRevealed } from './reveal.js'
 import type { DecoRange, NodeRule, RuleTable, Span } from './types.js'
 
 /** Class worn by a marker that is currently visible. */
@@ -120,7 +120,14 @@ export function buildDecorationRanges(
     seen.add(key)
 
     const node = ref.node
-    const revealed = rule.keepMarkers || isRevealed(node, selection)
+    const revealed =
+      rule.keepMarkers ||
+      (rule.revealOnLine
+        ? isLineRevealed(
+            { from: state.doc.lineAt(node.from).from, to: state.doc.lineAt(node.to).to },
+            selection
+          )
+        : isRevealed(node, selection))
 
     if (rule.line) addLines(node, rule.line)
 
@@ -128,7 +135,12 @@ export function buildDecorationRanges(
       if (ref.to > ref.from) {
         out.push(
           revealed
-            ? { from: ref.from, to: ref.to, kind: 'mark', class: rule.marker ?? SYNTAX_CLASS }
+            ? {
+                from: ref.from,
+                to: ref.to,
+                kind: 'mark',
+                class: rule.marker ?? SYNTAX_CLASS
+              }
             : { from: ref.from, to: ref.to, kind: 'replace' }
         )
       }

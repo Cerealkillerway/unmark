@@ -3,7 +3,9 @@ import type { NodeRule, RuleTable } from './types.js'
 const heading = (level: 1 | 2 | 3 | 4 | 5 | 6): NodeRule => ({
   line: `cm-md-line-h${level}`,
   content: `cm-md-h${level}`,
-  absorbSpace: true
+  absorbSpace: true,
+  // Markup stays visible while the caret is anywhere on the heading's line.
+  revealOnLine: true
 })
 
 /**

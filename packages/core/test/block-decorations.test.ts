@@ -18,21 +18,39 @@ import {
 
 describe('headings', () => {
   it('hides the hash and the space after it', () => {
-    expect(rendered('# Heading‸')).toBe('Heading')
-    expect(hidden('# Heading‸')).toEqual(['# '])
+    expect(rendered('# Heading\n‸')).toBe('Heading\n')
+    expect(hidden('# Heading\n‸')).toEqual(['# '])
   })
 
   it('hides the closing hashes of a closed ATX heading', () => {
-    expect(rendered('## Closed ##‸')).toBe('Closed')
+    expect(rendered('## Closed ##\n‸')).toBe('Closed\n')
   })
 
   it('applies a level class to the line and the content', () => {
-    expect(lineClassesOn('### Three‸', 1)).toEqual(['cm-md-line-h3'])
-    expect(classesAt('### Three‸', 4)).toEqual(['cm-md-h3'])
+    expect(lineClassesOn('### Three\n‸', 1)).toEqual(['cm-md-line-h3'])
+    expect(classesAt('### Three\n‸', 4)).toEqual(['cm-md-h3'])
   })
 
   it('reveals the hash when the caret is in the heading', () => {
     expect(rendered('# Head‸ing')).toBe('# Heading')
+  })
+
+  it('keeps the hash visible right after typing it', () => {
+    expect(rendered('#‸')).toBe('#')
+    expect(rendered('## ‸')).toBe('## ')
+  })
+
+  it('keeps the markup visible with the caret at the end of the title', () => {
+    expect(rendered('# Heading‸')).toBe('# Heading')
+    expect(rendered('## Closed ##‸')).toBe('## Closed ##')
+  })
+
+  it('keeps the markup visible with the caret at the start of the line', () => {
+    expect(rendered('text\n‸# Heading')).toBe('text\n# Heading')
+  })
+
+  it('hides the markup once the caret leaves the line', () => {
+    expect(rendered('# Heading\n\n‸text')).toBe('Heading\n\ntext')
   })
 
   it('keeps a setext underline visible, styled as syntax', () => {
@@ -155,7 +173,10 @@ describe('front matter — §4.2 hard exception', () => {
   })
 
   it('never hides the delimiters', () => {
-    expect(rendered(doc + '‸')).toBe('---\ntitle: Hello\n---\n\nBody')
+    // Caret on the blank line, off the heading, so `# ` is hidden.
+    expect(rendered('---\ntitle: Hello\n---\n‸\n# Body')).toBe(
+      '---\ntitle: Hello\n---\n\nBody'
+    )
   })
 
   it('marks the front matter lines', () => {

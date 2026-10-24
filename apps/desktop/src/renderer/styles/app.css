@@ -34,6 +34,9 @@
   --scrollbar-track: transparent;
   scrollbar-width: var(--scrollbar-width);
   scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+
+  /* Text fills the whole editor width instead of the library's 660px column. */
+  --content-width: none;
 }
 
 /* Dark is the default; `data-theme` on <html> and on .app both win over it. */
@@ -666,4 +669,5 @@ button {
   --md-scrollbar-width: var(--scrollbar-width);
   --md-color-scrollbar-thumb: var(--scrollbar-thumb);
   --md-color-scrollbar-track: var(--scrollbar-track);
+  --md-content-width: var(--content-width);
 }

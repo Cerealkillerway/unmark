@@ -72,6 +72,13 @@ export interface NodeRule {
    */
   readonly hideSelf?: boolean
   /**
+   * Reveal the markers whenever a caret or selection touches any line the
+   * node spans, ends included, instead of the strict in-node rule. Used by
+   * ATX headings: the caret after a freshly typed `#`, or at the end of a
+   * title being written, sits at `N.to`, and the `#` must stay visible there.
+   */
+  readonly revealOnLine?: boolean
+  /**
    * Collapse the node's outer lines — the whole first and last line, when a
    * marker sits on them — while the node is not revealed. This is what makes
    * a fenced code block hide its ``` lines instead of leaving them as two
